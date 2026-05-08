@@ -1,0 +1,61 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tuvalapp/config/router/app_router.dart';
+import 'package:tuvalapp/config/theme/app_theme.dart';
+import 'package:tuvalapp/infraestructure/services/key_value_storage_service.dart';
+import 'package:tuvalapp/presentation/providers/auth_provider.dart';
+import 'package:tuvalapp/presentation/screens/auth/check_auth_screen.dart';
+import 'package:tuvalapp/presentation/screens/auth/login_screen.dart';
+import 'package:tuvalapp/presentation/screens/home/home_screen.dart';
+
+void main() {
+  // runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) =>
+              AuthProvider(keyValueStorageService: KeyValueStorageService()),
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authStatus = context.watch<AuthProvider>().authStatus;
+    return MaterialApp(
+      title: 'TUVAL',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme(selectedColor: 0).theme(),
+      // initialRoute: AppRouter.initialRoute,
+      home: _buildHome(authStatus),
+      routes: AppRouter.getRoutes(),
+      builder: (context, child) {
+        return SafeArea(
+          top : false,
+          left : false,
+          right: false,
+          bottom: true,
+          child: child!,
+        );
+      },
+    );
+  }
+
+  Widget _buildHome(AuthStatus authStatus) {
+    switch (authStatus) {
+      case AuthStatus.checking:
+        return const CheckAuthScreen();
+      case AuthStatus.authenticated:
+        return const HomeScreen();
+      case AuthStatus.notAuthenticated:
+        return const LoginScreen();
+    }
+  }
+}

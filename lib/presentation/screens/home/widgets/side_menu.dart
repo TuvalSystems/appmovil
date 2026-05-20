@@ -15,6 +15,7 @@ class SideMenu extends StatelessWidget {
 
     //nuevo drawer menu
     return Drawer(
+      backgroundColor: Colors.white,
       child: Column(
         children: [
           UserAccountsDrawerHeader(

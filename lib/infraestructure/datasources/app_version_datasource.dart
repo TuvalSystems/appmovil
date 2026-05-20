@@ -1,30 +1,19 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:tuvalapp/config/http/api_endpoints.dart';
+import 'package:tuvalapp/config/http/dio_client.dart';
 import 'package:tuvalapp/domain/entities/app_version_info.dart';
 
 class AppVersionDatasource {
-  final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://tuvalapi.cosenco.ec/api',
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-      responseType: ResponseType.json,
-      headers: {
-        'Accept': 'application/json',
-      },
-    ),
-  );
+  final Dio _dio = DioClient.instance;
 
-  Future<AppVersionInfo> getLatestVersion({
-    String platform = 'android',
-  }) async {
+  Future<AppVersionInfo> getLatestVersion({String platform = 'android'}) async {
     try {
-      final response = await dio.get(
-        '/movil/app/latest',
-        queryParameters: {
-          'platform': platform,
-        },
+      final response = await _dio.get(
+        AppVersionEndpoints.latest,
+        queryParameters: {'platform': platform},
+        options: Options(extra: {'requiresAuth': false}),
       );
 
       final responseData = _normalizeResponseData(response.data);

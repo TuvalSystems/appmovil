@@ -1,32 +1,21 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/widgets.dart';
+import 'package:tuvalapp/config/http/api_endpoints.dart';
+import 'package:tuvalapp/config/http/dio_client.dart';
 import 'package:tuvalapp/domain/datasources/auth_datasource.dart';
 import 'package:tuvalapp/domain/entities/user.dart';
 import 'package:tuvalapp/infraestructure/models/user_model.dart';
 
 class SanctumDatasource extends AuthDatasource {
-  // final _storage = KeyValueStorageService();
-  final _dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://tuvalapi.cosenco.ec/api',
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-      headers: {
-        'Accept': 'application/json',
-        'Content-type': 'application/json',
-      },
-    ),
-  )..interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
+  final Dio _dio = DioClient.instance;
 
   @override
   Future<User> login(String username, String password) async {
     try {
       final response = await _dio.post(
-        '/login',
+        AuthEndpoints.login,
         data: {'username': username, 'password': password},
+        options: Options(extra: {'requiresAuth': false}),
       );
-      debugPrint('--- DATA RECIBIDA ---');
-      debugPrint(response.data.toString());
       if (response.data['success'] == true) {
         final bool hasAccess =
             response.data['data']['user']['app_access'] ?? false;
@@ -44,29 +33,21 @@ class SanctumDatasource extends AuthDatasource {
       }
       throw 'Error de red: ${e.message}';
     } catch (e) {
-      final errorMessage =
-          e
-              is Exception 
+      final errorMessage = e is Exception
           ? e.toString().replaceAll('Exception: ', '')
-          : e.toString(); 
+          : e.toString();
       throw errorMessage;
     }
   }
 
   Future<User> getCurrentUser(String token) async {
     try {
-      final response = await _dio.get(
-        '/user',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
-          },
-        ),
-      );
+      final response = await _dio.get(AuthEndpoints.user);
+
       final data = response.data is Map && response.data['user'] != null
           ? response.data['user']
           : response.data;
+          
 
       final userModel = UserModel.fromJson({...data, 'token': token});
       if (userModel.appAccess == false) {

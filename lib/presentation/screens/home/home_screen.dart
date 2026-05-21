@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tuvalapp/infraestructure/services/app_update_service.dart';
+import 'package:tuvalapp/infrastructure/services/app_update_service.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/content_body.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/side_menu.dart';

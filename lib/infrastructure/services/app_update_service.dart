@@ -1,6 +1,6 @@
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:tuvalapp/domain/entities/app_version_info.dart';
-import 'package:tuvalapp/infraestructure/datasources/app_version_datasource.dart';
+import 'package:tuvalapp/infrastructure/datasources/app_version_datasource.dart';
 
 class AppUpdateResult {
   final bool hasUpdate;

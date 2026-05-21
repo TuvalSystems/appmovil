@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:tuvalapp/config/http/api_endpoints.dart';
 import 'package:tuvalapp/config/http/dio_client.dart';
+import 'package:tuvalapp/config/http/endpoints/app_version_endpoints.dart';
 import 'package:tuvalapp/domain/entities/app_version_info.dart';
 
 class AppVersionDatasource {

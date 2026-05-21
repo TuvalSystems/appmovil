@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:tuvalapp/config/http/api_endpoints.dart';
 import 'package:tuvalapp/config/http/dio_client.dart';
+import 'package:tuvalapp/config/http/endpoints/auth_endpoints.dart';
 import 'package:tuvalapp/domain/datasources/auth_datasource.dart';
 import 'package:tuvalapp/domain/entities/user.dart';
-import 'package:tuvalapp/infraestructure/models/user_model.dart';
+import 'package:tuvalapp/infrastructure/models/user_model.dart';
 
 class SanctumDatasource extends AuthDatasource {
   final Dio _dio = DioClient.instance;
@@ -47,7 +47,7 @@ class SanctumDatasource extends AuthDatasource {
       final data = response.data is Map && response.data['user'] != null
           ? response.data['user']
           : response.data;
-          
+
 
       final userModel = UserModel.fromJson({...data, 'token': token});
       if (userModel.appAccess == false) {

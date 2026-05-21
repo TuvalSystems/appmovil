@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/config/router/app_router.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
-import 'package:tuvalapp/infraestructure/services/key_value_storage_service.dart';
+import 'package:tuvalapp/infrastructure/services/key_value_storage_service.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
 import 'package:tuvalapp/presentation/screens/auth/check_auth_screen.dart';
 import 'package:tuvalapp/presentation/screens/auth/login_screen.dart';
 import 'package:tuvalapp/presentation/screens/home/home_screen.dart';
 
 void main() {
-  // runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [

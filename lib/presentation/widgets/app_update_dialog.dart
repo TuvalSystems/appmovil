@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:tuvalapp/infraestructure/services/app_update_service.dart';
+import 'package:tuvalapp/infrastructure/services/app_update_service.dart';
 
 class AppUpdateDialog extends StatelessWidget {
   final AppUpdateResult result;

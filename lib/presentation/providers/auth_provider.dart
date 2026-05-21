@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tuvalapp/domain/entities/user.dart';
-import 'package:tuvalapp/infraestructure/datasources/sanctum_datasource.dart';
-import 'package:tuvalapp/infraestructure/services/key_value_storage_service.dart';
+import 'package:tuvalapp/infrastructure/datasources/sanctum_datasource.dart';
+import 'package:tuvalapp/infrastructure/services/key_value_storage_service.dart';
 
 enum AuthStatus { checking, authenticated, notAuthenticated }
 

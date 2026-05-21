@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:tuvalapp/config/environment/app_environment.dart';
-import 'package:tuvalapp/infraestructure/services/key_value_storage_service.dart';
+import 'package:tuvalapp/infrastructure/services/key_value_storage_service.dart';
 
 class DioClient {
   DioClient._();

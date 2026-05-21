@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
+import 'package:tuvalapp/infrastructure/datasources/steam_trap_datasource.dart';
+import 'package:tuvalapp/infrastructure/models/steam_traps/steam_trap_sizing_request.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/side_menu.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SteamTrapsScreen extends StatefulWidget {
   const SteamTrapsScreen({super.key});
@@ -12,17 +15,29 @@ class SteamTrapsScreen extends StatefulWidget {
 
 class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
   Timer? _resultDebounce;
+  bool isSending = false;
+  String? sendMessage;
+  String? generatedPdfUrl;
+
+  final SteamTrapDatasource steamTrapDatasource = SteamTrapDatasource();
   void _scheduleResultRefresh() {
     _resultDebounce?.cancel();
 
     _resultDebounce = Timer(const Duration(milliseconds: 180), () {
       if (!mounted) return;
-      setState(() {});
+      setState(() {
+        sendMessage = null;
+        generatedPdfUrl = null;
+      });
     });
   }
 
   String selectedProcess = 'Marmita';
   String selectedUnd = 'psig';
+
+  final TextEditingController returnPressureController = TextEditingController(
+    text: '0',
+  );
 
   final TextEditingController pressureController = TextEditingController(
     text: '5',
@@ -182,6 +197,14 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
     ].contains(selectedProcess);
   }
 
+  double get _returnPressurePsig {
+    return _toDouble(returnPressureController.text);
+  }
+
+  double get _pressureDifferentialPsig {
+    return _pressurePsig - _returnPressurePsig;
+  }
+
   double _pressureToPsig(double pressure, String unit) {
     switch (unit.toLowerCase()) {
       case 'psig':
@@ -252,6 +275,13 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
   String? get _validationMessage {
     if (_pressurePsig <= 0) {
       return 'Ingrese una presión de trabajo válida.';
+    }
+    if (_returnPressurePsig < 0) {
+      return 'La presión de retorno no puede ser negativa.';
+    }
+
+    if (_returnPressurePsig >= _pressurePsig) {
+      return 'La presión de retorno debe ser menor que la presión de trabajo.';
     }
     if (_isHeatingProcess && (_pressurePsig < 5 || _pressurePsig > 250)) {
       return 'Para calentamiento, la tabla hfg disponible cubre de 5 a 250 PSIG.';
@@ -375,6 +405,7 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
     tiempoController.dispose();
     knownLoadController.dispose();
     boilerBhpController.dispose();
+    returnPressureController.dispose();
     super.dispose();
   }
 
@@ -527,7 +558,14 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    SizedBox(width: 220, child: _unitBadge()),
+                    Expanded(
+                      child: _appInput(
+                        label: 'Presión de retorno',
+                        controller: returnPressureController,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(width: 100, child: _unitBadge()),
                   ],
                 );
               }
@@ -537,6 +575,11 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
                   _appInput(
                     label: 'Presión de trabajo',
                     controller: pressureController,
+                  ),
+                  const SizedBox(height: 12),
+                  _appInput(
+                    label: 'Presión de retorno',
+                    controller: returnPressureController,
                   ),
                   const SizedBox(height: 12),
                   _unitBadge(),
@@ -839,9 +882,7 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
               ],
             ),
           ],
-
           const SizedBox(height: 12),
-
           Text(
             _isHeatingProcess
                 ? 'Cálculo por energía: 60 × ρ × V × Cp × ΔT / (hfg × t min).'
@@ -852,6 +893,45 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
               height: 1.35,
             ),
           ),
+
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: isSending ? null : _generateSizingPdf,
+              icon: isSending
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.picture_as_pdf_outlined),
+              label: Text(isSending ? 'Generando...' : 'Generar PDF'),
+            ),
+          ),
+          if (generatedPdfUrl != null) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _openGeneratedPdf,
+                icon: const Icon(Icons.open_in_new),
+                label: const Text('Abrir PDF generado'),
+              ),
+            ),
+          ],
+
+          if (sendMessage != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              sendMessage!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                height: 1.35,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1038,6 +1118,115 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
         color: Color(0xff344563),
       ),
     );
+  }
+
+  SteamTrapSizingRequest _buildSizingRequest() {
+    final isHeating = _isHeatingProcess;
+    final knownLoad = _toDouble(knownLoadController.text);
+    final boilerBhp = _toDouble(boilerBhpController.text);
+    return SteamTrapSizingRequest(
+      process: selectedProcess,
+      trapType: _recommendedTrap(selectedProcess),
+      calculationMethod: _calculationMethod,
+
+      workingPressurePsig: _pressurePsig,
+      returnPressurePsig: _returnPressurePsig,
+      pressureDifferentialPsig: _pressureDifferentialPsig,
+
+      fluid: isHeating ? selectedFluid : null,
+      volumeM3: isHeating ? _toDouble(volumeController.text) : null,
+      densityKgM3: isHeating ? _rho : null,
+      cpKjKgC: isHeating ? _cp : null,
+      initialTemperatureC: isHeating ? _toDouble(tempIniController.text) : null,
+      finalTemperatureC: isHeating ? _toDouble(tempFinController.text) : null,
+      heatingTimeMin: isHeating ? _toDouble(tiempoController.text) : null,
+      requiredHeatKj: isHeating ? _calorRequeridoKj : null,
+      hfgKjKg: isHeating ? _hfg : null,
+
+      knownLoadKgH: !isHeating && knownLoad > 0 ? knownLoad : null,
+      boilerBhp: !isHeating && knownLoad <= 0 && boilerBhp > 0
+          ? boilerBhp
+          : null,
+
+      estimatedLoadKg: _cargaEstimada,
+      safetyFactor: 1.5,
+      loadWithSafetyFactorKg: _cargaConFs,
+    );
+  }
+
+  Future<void> _generateSizingPdf() async {
+    final validation = _validationMessage;
+
+    if (validation != null) {
+      setState(() {
+        sendMessage = validation;
+      });
+      return;
+    }
+
+    setState(() {
+      isSending = true;
+      sendMessage = null;
+    });
+
+    try {
+      final request = _buildSizingRequest();
+
+      final response = await steamTrapDatasource.generateSizingPdf(request);
+
+      final data = response['data'];
+      final pdfUrl = data is Map<String, dynamic>
+          ? data['pdfUrl']?.toString()
+          : null;
+
+      if (!mounted) return;
+
+      setState(() {
+        generatedPdfUrl = pdfUrl;
+        sendMessage =
+            response['message']?.toString() ?? 'PDF generado correctamente.';
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        sendMessage = e.toString().replaceAll('Exception: ', '');
+      });
+    } finally {
+      if (!mounted) return;
+
+      setState(() {
+        isSending = false;
+      });
+    }
+  }
+
+  Future<void> _openGeneratedPdf() async {
+    final url = generatedPdfUrl;
+
+    if (url == null || url.isEmpty) {
+      setState(() {
+        sendMessage = 'No se encontró la URL del PDF generado.';
+      });
+      return;
+    }
+
+    final uri = Uri.tryParse(url);
+
+    if (uri == null) {
+      setState(() {
+        sendMessage = 'La URL del PDF no es válida.';
+      });
+      return;
+    }
+
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+    if (!opened && mounted) {
+      setState(() {
+        sendMessage = 'No se pudo abrir el PDF.';
+      });
+    }
   }
 }
 

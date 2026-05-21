@@ -1,5 +1,7 @@
 class ArticleEndpoints {
   ArticleEndpoints._();
 
-  static const String travapSelection = '/articulos/travap/seleccion';
+  //Steam Traps
+  static const String sendSizing =
+      '/movil/articulos/trampas-vapor/dimensionamiento';
 }

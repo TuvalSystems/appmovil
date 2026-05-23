@@ -6,16 +6,19 @@ import 'package:tuvalapp/infrastructure/services/key_value_storage_service.dart'
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
 import 'package:tuvalapp/presentation/screens/auth/check_auth_screen.dart';
 import 'package:tuvalapp/presentation/screens/auth/login_screen.dart';
+import 'package:tuvalapp/presentation/screens/auth/change_password_screen.dart';
 import 'package:tuvalapp/presentation/screens/home/home_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) =>
-              AuthProvider(keyValueStorageService: KeyValueStorageService()),
+          create: (_) => AuthProvider(
+            keyValueStorageService: KeyValueStorageService(),
+          ),
         ),
       ],
       child: const MyApp(),
@@ -29,17 +32,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authStatus = context.watch<AuthProvider>().authStatus;
+
     return MaterialApp(
       title: 'TUVAL',
       debugShowCheckedModeBanner: false,
       theme: AppTheme(selectedColor: 0).theme(),
-      // initialRoute: AppRouter.initialRoute,
       home: _buildHome(authStatus),
       routes: AppRouter.getRoutes(),
       builder: (context, child) {
         return SafeArea(
-          top : false,
-          left : false,
+          top: false,
+          left: false,
           right: false,
           bottom: true,
           child: child!,
@@ -52,8 +55,13 @@ class MyApp extends StatelessWidget {
     switch (authStatus) {
       case AuthStatus.checking:
         return const CheckAuthScreen();
+
+      case AuthStatus.mustChangePassword:
+        return const ChangePasswordScreen();
+
       case AuthStatus.authenticated:
         return const HomeScreen();
+
       case AuthStatus.notAuthenticated:
         return const LoginScreen();
     }

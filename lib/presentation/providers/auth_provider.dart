@@ -3,11 +3,17 @@ import 'package:tuvalapp/domain/entities/user.dart';
 import 'package:tuvalapp/infrastructure/datasources/sanctum_datasource.dart';
 import 'package:tuvalapp/infrastructure/services/key_value_storage_service.dart';
 
-enum AuthStatus { checking, authenticated, notAuthenticated }
+enum AuthStatus {
+  checking,
+  authenticated,
+  notAuthenticated,
+  mustChangePassword,
+}
 
 class AuthProvider extends ChangeNotifier {
   final KeyValueStorageService keyValueStorageService;
-  final sanctumDatasource = SanctumDatasource();
+  final SanctumDatasource sanctumDatasource = SanctumDatasource();
+
   AuthStatus authStatus = AuthStatus.checking;
   User? user;
   bool isPosting = false;
@@ -16,7 +22,8 @@ class AuthProvider extends ChangeNotifier {
   AuthProvider({required this.keyValueStorageService}) {
     checkAuthStatus();
   }
-  //login
+
+  // Login
   Future<bool> login(String username, String password) async {
     isPosting = true;
     errorMessage = null;
@@ -30,15 +37,20 @@ class AuthProvider extends ChangeNotifier {
       }
 
       user = userResponse;
+
       await keyValueStorageService.setKeyValue(
         'auth_token',
         userResponse.token,
       );
 
-      authStatus = AuthStatus.authenticated;
+      authStatus = userResponse.mustChangePassword
+          ? AuthStatus.mustChangePassword
+          : AuthStatus.authenticated;
+
       isPosting = false;
       errorMessage = null;
       notifyListeners();
+
       return true;
     } catch (e) {
       await keyValueStorageService.removeKey('auth_token');
@@ -48,21 +60,24 @@ class AuthProvider extends ChangeNotifier {
       authStatus = AuthStatus.notAuthenticated;
       errorMessage = _cleanError(e);
       notifyListeners();
+
       return false;
     }
   }
 
-  //logout
+  // Logout
   Future<void> logout([String? message]) async {
     await keyValueStorageService.removeKey('auth_token');
+
     user = null;
     isPosting = false;
     errorMessage = message;
     authStatus = AuthStatus.notAuthenticated;
+
     notifyListeners();
   }
 
-  //checkAuthStatus
+  // Check Auth Status
   Future<void> checkAuthStatus() async {
     authStatus = AuthStatus.checking;
     errorMessage = null;
@@ -79,16 +94,44 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return;
     }
+
     try {
       final userResponse = await sanctumDatasource.getCurrentUser(token);
+
       user = userResponse;
       isPosting = false;
       errorMessage = null;
-      authStatus = AuthStatus.authenticated;
+
+      authStatus = userResponse.mustChangePassword
+          ? AuthStatus.mustChangePassword
+          : AuthStatus.authenticated;
+
       notifyListeners();
     } catch (e) {
       await logout();
     }
+  }
+
+  // Llamar esto después de cambiar correctamente la contraseña
+  void markPasswordAsChanged() {
+    if (user == null) return;
+
+    user = User(
+      id: user!.id,
+      loginId: user!.loginId,
+      fullName: user!.fullName,
+      appProfileId: user!.appProfileId,
+      appProfileName: user!.appProfileName,
+      status: user!.status,
+      token: user!.token,
+      appAccess: user!.appAccess,
+      mustChangePassword: false,
+    );
+
+    authStatus = AuthStatus.authenticated;
+    errorMessage = null;
+
+    notifyListeners();
   }
 
   String _cleanError(Object e) {

@@ -90,4 +90,35 @@ class SanctumDatasource extends AuthDatasource {
       throw Exception('Error verificando sesión: $e');
     }
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      final response = await _dio.post(
+        AuthEndpoints.changePassword,
+        data: {
+          'current_password': currentPassword,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+
+      final responseData = Map<String, dynamic>.from(response.data);
+
+      if (responseData['success'] != true) {
+        throw Exception(
+          responseData['message'] ?? 'No se pudo actualizar la contraseña',
+        );
+      }
+    } on DioException catch (e) {
+      if (e.response?.data is Map && e.response?.data['message'] != null) {
+        throw Exception(e.response?.data['message']);
+      }
+
+      throw Exception('Error actualizando contraseña: ${e.message}');
+    }
+  }
 }

@@ -137,4 +137,52 @@ class AuthProvider extends ChangeNotifier {
   String _cleanError(Object e) {
     return e.toString().replaceFirst('Exception: ', '');
   }
+
+
+//cambiar contraseña
+Future<bool> changePassword({
+  required String currentPassword,
+  required String password,
+  required String passwordConfirmation,
+}) async {
+  isPosting = true;
+  errorMessage = null;
+  notifyListeners();
+
+  try {
+    await sanctumDatasource.changePassword(
+      currentPassword: currentPassword,
+      password: password,
+      passwordConfirmation: passwordConfirmation,
+    );
+
+    if (user != null) {
+      user = User(
+        id: user!.id,
+        loginId: user!.loginId,
+        fullName: user!.fullName,
+        appProfileId: user!.appProfileId,
+        appProfileName: user!.appProfileName,
+        status: user!.status,
+        token: user!.token,
+        appAccess: user!.appAccess,
+        mustChangePassword: false,
+      );
+    }
+
+    authStatus = AuthStatus.authenticated;
+    isPosting = false;
+    errorMessage = null;
+    notifyListeners();
+
+    return true;
+  } catch (e) {
+    isPosting = false;
+    errorMessage = _cleanError(e);
+    notifyListeners();
+
+    return false;
+  }
+}
+
 }

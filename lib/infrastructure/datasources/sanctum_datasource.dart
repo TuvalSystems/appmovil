@@ -16,26 +16,38 @@ class SanctumDatasource extends AuthDatasource {
         data: {'username': username, 'password': password},
         options: Options(extra: {'requiresAuth': false}),
       );
-      if (response.data['success'] == true) {
-        final bool hasAccess =
-            response.data['data']['user']['app_access'] ?? false;
-        if (!hasAccess) {
-          throw 'No tienes permisos para acceder a la aplicación móvil.';
-        }
-        final userModel = UserModel.fromJson(response.data);
-        return userModel.toEntity();
-      } else {
-        throw response.data['message'] ?? 'Error desconocido';
+
+      final Map<String, dynamic> responseData = Map<String, dynamic>.from(
+        response.data,
+      );
+
+      if (responseData['success'] != true) {
+        throw responseData['message'] ?? 'Error desconocido';
       }
+
+      final userModel = UserModel.fromJson(responseData);
+
+      if (!userModel.appAccess) {
+        throw 'No tienes permisos para acceder a la aplicación móvil.';
+      }
+
+      return userModel.toEntity();
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         throw 'Credenciales incorrectas';
       }
+
+      if (e.response?.statusCode == 403) {
+        throw e.response?.data['message'] ??
+            'Usuario sin permisos para acceder a la aplicación móvil.';
+      }
+
       throw 'Error de red: ${e.message}';
     } catch (e) {
       final errorMessage = e is Exception
           ? e.toString().replaceAll('Exception: ', '')
           : e.toString();
+
       throw errorMessage;
     }
   }
@@ -44,24 +56,31 @@ class SanctumDatasource extends AuthDatasource {
     try {
       final response = await _dio.get(AuthEndpoints.user);
 
-      final data = response.data is Map && response.data['user'] != null
-          ? response.data['user']
-          : response.data;
+      final responseData = Map<String, dynamic>.from(response.data);
 
+      if (responseData['success'] != true) {
+        throw Exception(responseData['message'] ?? 'Error verificando sesión');
+      }
 
-      final userModel = UserModel.fromJson({...data, 'token': token});
-      if (userModel.appAccess == false) {
+      final userModel = UserModel.fromJson({...responseData, 'token': token});
+
+      if (!userModel.appAccess) {
         throw Exception(
           'Acceso denegado: Tu usuario ya no tiene permisos para usar la app.',
         );
       }
+
       return userModel.toEntity();
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         throw Exception('Token inválido o expirado');
       }
+
       if (e.response?.statusCode == 403) {
-        throw Exception('Usuario sin permisos o requiere cambio de contraseña');
+        throw Exception(
+          e.response?.data['message'] ??
+              'Usuario sin permisos o requiere cambio de contraseña',
+        );
       }
 
       throw Exception(

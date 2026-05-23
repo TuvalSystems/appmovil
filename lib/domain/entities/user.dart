@@ -1,19 +1,23 @@
 class User {
   final String id;
-  final String loginId; // Esto será lo que viene como USERID
-  final String fullName; // Esto será lo que viene como USERNAME
-  final int profileId; // perfil_id
+  final String loginId;
+  final String fullName;
+  final int appProfileId;
+  final String appProfileName;
   final int status;
-  final bool appAccess;
   final String token;
+  final bool appAccess;
+  final bool mustChangePassword;
 
   User({
     required this.id,
     required this.loginId,
     required this.fullName,
-    required this.profileId,
+    required this.appProfileId,
+    required this.appProfileName,
     required this.status,
-    required this.appAccess,
     required this.token,
+    required this.appAccess,
+    required this.mustChangePassword,
   });
 }

@@ -52,7 +52,7 @@ class ContentBody extends StatelessWidget {
                     child: _InfoCard(
                       icon: Icons.verified_user_outlined,
                       title: 'Perfil',
-                      value: 'Perfil ${currentUser.profileId}',
+                      value: 'Perfil ${currentUser.appProfileName}',
                       subtitle: currentUser.status == 1
                           ? 'Usuario activo'
                           : 'Usuario inactivo',

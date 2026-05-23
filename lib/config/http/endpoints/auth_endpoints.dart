@@ -1,6 +1,7 @@
 class AuthEndpoints {
   AuthEndpoints._();
 
-  static const String login = '/login';
-  static const String user = '/user';
+  static const String login = '/movil/login';
+  static const String user = '/movil/user';
+  static const String changePassword = '/movil/change-password';
 }

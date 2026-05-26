@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:tuvalapp/config/http/api_exception.dart';
+import 'package:tuvalapp/config/http/api_handler.dart';
 import 'package:tuvalapp/config/http/dio_client.dart';
 import 'package:tuvalapp/config/http/endpoints/auth_endpoints.dart';
 import 'package:tuvalapp/domain/datasources/auth_datasource.dart';
@@ -10,115 +12,49 @@ class SanctumDatasource extends AuthDatasource {
 
   @override
   Future<User> login(String username, String password) async {
-    try {
-      final response = await _dio.post(
+    final responseData = await ApiHandler.run(() {
+      return _dio.post(
         AuthEndpoints.login,
         data: {'username': username, 'password': password},
         options: Options(extra: {'requiresAuth': false}),
       );
+    });
 
-      final Map<String, dynamic> responseData = Map<String, dynamic>.from(
-        response.data,
+    final userModel = UserModel.fromJson(responseData);
+    if (!userModel.appAccess) {
+      throw const ApiException(
+        message: 'No tienes permisos para acceder a la aplicación móvil.',
+        status: 403,
       );
-
-      if (responseData['success'] != true) {
-        throw responseData['message'] ?? 'Error desconocido';
-      }
-
-      final userModel = UserModel.fromJson(responseData);
-
-      if (!userModel.appAccess) {
-        throw 'No tienes permisos para acceder a la aplicación móvil.';
-      }
-
-      return userModel.toEntity();
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw 'Credenciales incorrectas';
-      }
-
-      if (e.response?.statusCode == 403) {
-        throw e.response?.data['message'] ??
-            'Usuario sin permisos para acceder a la aplicación móvil.';
-      }
-
-      throw 'Error de red: ${e.message}';
-    } catch (e) {
-      final errorMessage = e is Exception
-          ? e.toString().replaceAll('Exception: ', '')
-          : e.toString();
-
-      throw errorMessage;
     }
+    return userModel.toEntity();
   }
 
   Future<User> getCurrentUser(String token) async {
-    try {
-      final response = await _dio.get(AuthEndpoints.user);
-
-      final responseData = Map<String, dynamic>.from(response.data);
-
-      if (responseData['success'] != true) {
-        throw Exception(responseData['message'] ?? 'Error verificando sesión');
-      }
-
-      final userModel = UserModel.fromJson({...responseData, 'token': token});
-
-      if (!userModel.appAccess) {
-        throw Exception(
-          'Acceso denegado: Tu usuario ya no tiene permisos para usar la app.',
-        );
-      }
-
-      return userModel.toEntity();
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        throw Exception('Token inválido o expirado');
-      }
-
-      if (e.response?.statusCode == 403) {
-        throw Exception(
-          e.response?.data['message'] ??
-              'Usuario sin permisos o requiere cambio de contraseña',
-        );
-      }
-
-      throw Exception(
-        'Error verificando sesión: ${e.response?.data ?? e.message}',
+    final responseData = await ApiHandler.run(() {
+      return _dio.get(
+        AuthEndpoints.user,
+        options: Options(extra: {'requiresAuth': true}),
       );
-    } catch (e) {
-      throw Exception('Error verificando sesión: $e');
+    });
+    final userModel = UserModel.fromJson({...responseData, 'token': token});
+
+    if (!userModel.appAccess) {
+      throw const ApiException(
+        message:
+            'Acceso denegado: Tu usuario ya no tiene permisos para usar la app.',
+        status: 403,
+      );
     }
+    return userModel.toEntity();
   }
 
-  Future<void> changePassword({
-    required String currentPassword,
-    required String password,
-    required String passwordConfirmation,
-  }) async {
-    try {
-      final response = await _dio.post(
+  Future<void> changePassword({required String password}) async {
+    await ApiHandler.run(() {
+      return _dio.post(
         AuthEndpoints.changePassword,
-        data: {
-          'current_password': currentPassword,
-          'password': password,
-          'password_confirmation': passwordConfirmation,
-        },
+        data: {'password': password},
       );
-
-      final responseData = Map<String, dynamic>.from(response.data);
-
-      if (responseData['success'] != true) {
-        throw Exception(
-          responseData['message'] ?? 'No se pudo actualizar la contraseña',
-        );
-      }
-    } on DioException catch (e) {
-      if (e.response?.data is Map && e.response?.data['message'] != null) {
-        throw Exception(e.response?.data['message']);
-      }
-
-      throw Exception('Error actualizando contraseña: ${e.message}');
-    }
+    });
   }
 }

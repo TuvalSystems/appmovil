@@ -1175,9 +1175,7 @@ class _SteamTrapsScreenState extends State<SteamTrapsScreen> {
       final response = await steamTrapDatasource.generateSizingPdf(request);
 
       final data = response['data'];
-      final pdfUrl = data is Map<String, dynamic>
-          ? data['pdfUrl']?.toString()
-          : null;
+      final pdfUrl = data is Map ? data['pdfUrl']?.toString() : null;
 
       if (!mounted) return;
 

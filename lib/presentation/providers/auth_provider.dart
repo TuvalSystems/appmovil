@@ -141,9 +141,7 @@ class AuthProvider extends ChangeNotifier {
 
 //cambiar contraseña
 Future<bool> changePassword({
-  required String currentPassword,
   required String password,
-  required String passwordConfirmation,
 }) async {
   isPosting = true;
   errorMessage = null;
@@ -151,9 +149,7 @@ Future<bool> changePassword({
 
   try {
     await sanctumDatasource.changePassword(
-      currentPassword: currentPassword,
       password: password,
-      passwordConfirmation: passwordConfirmation,
     );
 
     if (user != null) {

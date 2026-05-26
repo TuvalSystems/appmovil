@@ -6,12 +6,12 @@ class UserModel {
   final String fullName;
   final int appProfileId;
   final String appProfileName;
-  final int status;
+  final bool status;
   final String token;
   final bool appAccess;
   final bool mustChangePassword;
 
-  UserModel({
+  const UserModel({
     required this.id,
     required this.userId,
     required this.fullName,
@@ -34,7 +34,7 @@ class UserModel {
       fullName: userJson['USERNAME']?.toString() ?? '',
       appProfileId: _toInt(userJson['perfil_app_id']),
       appProfileName: userJson['perfil_app_name']?.toString() ?? '',
-      status: _toInt(userJson['status']),
+      status: _toBool(userJson['status']),
       appAccess: _toBool(userJson['app_access']),
       mustChangePassword: _toBool(userJson['must_change_password']),
       token: token,
@@ -42,7 +42,7 @@ class UserModel {
   }
 
   User toEntity() => User(
-        id: id.toString(),
+        id: id,
         loginId: userId,
         fullName: fullName,
         appProfileId: appProfileId,
@@ -57,25 +57,21 @@ class UserModel {
     final data = json['data'];
 
     // Caso login:
-    // { data: { user: {...}, token: "..." } }
     if (data is Map && data['user'] is Map) {
       return Map<String, dynamic>.from(data['user']);
     }
 
     // Caso currentUser:
-    // { data: { id, USERID, USERNAME, ... } }
     if (data is Map) {
       return Map<String, dynamic>.from(data);
     }
 
     // Caso alternativo:
-    // { user: {...} }
     if (json['user'] is Map) {
       return Map<String, dynamic>.from(json['user']);
     }
 
     // Caso usuario directo:
-    // { id, USERID, USERNAME, ... }
     return json;
   }
 

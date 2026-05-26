@@ -1,15 +1,15 @@
 class User {
-  final String id;
+  final int id;
   final String loginId;
   final String fullName;
   final int appProfileId;
   final String appProfileName;
-  final int status;
+  final bool status;
   final String token;
   final bool appAccess;
   final bool mustChangePassword;
 
-  User({
+  const User({
     required this.id,
     required this.loginId,
     required this.fullName,
@@ -20,4 +20,28 @@ class User {
     required this.appAccess,
     required this.mustChangePassword,
   });
+
+  User copyWith({
+    int? id,
+    String? loginId,
+    String? fullName,
+    int? appProfileId,
+    String? appProfileName,
+    bool? status,
+    String? token,
+    bool? appAccess,
+    bool? mustChangePassword,
+  }) {
+    return User(
+      id: id ?? this.id,
+      loginId: loginId ?? this.loginId,
+      fullName: fullName ?? this.fullName,
+      appProfileId: appProfileId ?? this.appProfileId,
+      appProfileName: appProfileName ?? this.appProfileName,
+      status: status ?? this.status,
+      token: token ?? this.token,
+      appAccess: appAccess ?? this.appAccess,
+      mustChangePassword: mustChangePassword ?? this.mustChangePassword,
+    );
+  }
 }

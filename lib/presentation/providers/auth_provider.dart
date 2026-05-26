@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tuvalapp/config/http/api_exception.dart';
 import 'package:tuvalapp/domain/entities/user.dart';
 import 'package:tuvalapp/infrastructure/datasources/sanctum_datasource.dart';
 import 'package:tuvalapp/infrastructure/services/key_value_storage_service.dart';
@@ -114,71 +115,47 @@ class AuthProvider extends ChangeNotifier {
 
   // Llamar esto después de cambiar correctamente la contraseña
   void markPasswordAsChanged() {
-    if (user == null) return;
-
-    user = User(
-      id: user!.id,
-      loginId: user!.loginId,
-      fullName: user!.fullName,
-      appProfileId: user!.appProfileId,
-      appProfileName: user!.appProfileName,
-      status: user!.status,
-      token: user!.token,
-      appAccess: user!.appAccess,
-      mustChangePassword: false,
-    );
-
-    authStatus = AuthStatus.authenticated;
-    errorMessage = null;
-
+    _setPasswordAsChanged();
     notifyListeners();
   }
 
   String _cleanError(Object e) {
+    if (e is ApiException) {
+      return e.message;
+    }
     return e.toString().replaceFirst('Exception: ', '');
   }
 
-
-//cambiar contraseña
-Future<bool> changePassword({
-  required String password,
-}) async {
-  isPosting = true;
-  errorMessage = null;
-  notifyListeners();
-
-  try {
-    await sanctumDatasource.changePassword(
-      password: password,
-    );
-
-    if (user != null) {
-      user = User(
-        id: user!.id,
-        loginId: user!.loginId,
-        fullName: user!.fullName,
-        appProfileId: user!.appProfileId,
-        appProfileName: user!.appProfileName,
-        status: user!.status,
-        token: user!.token,
-        appAccess: user!.appAccess,
-        mustChangePassword: false,
-      );
-    }
-
-    authStatus = AuthStatus.authenticated;
-    isPosting = false;
+  //cambiar contraseña
+  Future<bool> changePassword({required String password}) async {
+    isPosting = true;
     errorMessage = null;
     notifyListeners();
 
-    return true;
-  } catch (e) {
-    isPosting = false;
-    errorMessage = _cleanError(e);
-    notifyListeners();
+    try {
+      await sanctumDatasource.changePassword(password: password);
 
-    return false;
+      _setPasswordAsChanged();
+
+      isPosting = false;
+      errorMessage = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      isPosting = false;
+      errorMessage = _cleanError(e);
+      notifyListeners();
+
+      return false;
+    }
   }
-}
 
+  void _setPasswordAsChanged() {
+    if (user == null) return;
+
+    user = user!.copyWith(mustChangePassword: false);
+
+    authStatus = AuthStatus.authenticated;
+    errorMessage = null;
+  }
 }

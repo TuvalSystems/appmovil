@@ -53,7 +53,7 @@ class ContentBody extends StatelessWidget {
                       icon: Icons.verified_user_outlined,
                       title: 'Perfil',
                       value: 'Perfil ${currentUser.appProfileName}',
-                      subtitle: currentUser.status == 1
+                      subtitle: currentUser.status == true
                           ? 'Usuario activo'
                           : 'Usuario inactivo',
                     ),

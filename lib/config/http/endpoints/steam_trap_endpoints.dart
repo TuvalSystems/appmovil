@@ -3,4 +3,6 @@ class SteamTrapEndpoints {
 
   static const String generateSizingPdf =
       '/movil/trampas-vapor/dimensionamiento';
+
+ 
 }

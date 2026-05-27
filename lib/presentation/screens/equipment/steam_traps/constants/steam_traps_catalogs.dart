@@ -1,0 +1,101 @@
+class SteamTrapsCatalogs {
+  static const List<String> processes = [
+    'Marmita',
+    'Intercambiador (placas/tubos)',
+    'Rotatubos',
+    'Rotadiscos',
+    'Peletizadora',
+    'Extrusora',
+    'Autoclave',
+    'Bota de condensado',
+    'Separador de humedad',
+    'Distribuidor',
+    'Final de línea',
+    'Traceo',
+  ];
+
+  static const List<String> heatingProcesses = [
+    'Marmita',
+    'Intercambiador (placas/tubos)',
+    'Rotatubos',
+    'Rotadiscos',
+    'Peletizadora',
+    'Extrusora',
+    'Autoclave',
+  ];
+
+  static const List<String> drainProcesses = [
+    'Bota de condensado',
+    'Separador de humedad',
+    'Distribuidor',
+    'Final de línea',
+    'Traceo',
+  ];
+
+  static const List<String> fluids = [
+    'Agua',
+    'Agua salada',
+    'Aceite',
+    'Bunker',
+  ];
+
+  static const Map<String, Map<String, double>> fluidProperties = {
+    'Agua': {'cp': 4.19, 'rho': 1000},
+    'Agua salada': {'cp': 4.00, 'rho': 1028},
+    'Aceite': {'cp': 2.30, 'rho': 900},
+    'Bunker': {'cp': 2.09, 'rho': 950},
+  };
+
+  static const List<Map<String, double>> steamTablePsig = [
+    {'psig': 5, 'hfg': 2234.1},
+    {'psig': 10, 'hfg': 2215.5},
+    {'psig': 15, 'hfg': 2199.4},
+    {'psig': 20, 'hfg': 2185.3},
+    {'psig': 25, 'hfg': 2172.5},
+    {'psig': 30, 'hfg': 2160.3},
+    {'psig': 35, 'hfg': 2149.1},
+    {'psig': 40, 'hfg': 2138.5},
+    {'psig': 45, 'hfg': 2128.9},
+    {'psig': 50, 'hfg': 2121.1},
+    {'psig': 55, 'hfg': 2112.5},
+    {'psig': 60, 'hfg': 2104.3},
+    {'psig': 65, 'hfg': 2096.7},
+    {'psig': 70, 'hfg': 2089.7},
+    {'psig': 75, 'hfg': 2081.8},
+    {'psig': 80, 'hfg': 2074.4},
+    {'psig': 85, 'hfg': 2067.5},
+    {'psig': 90, 'hfg': 2061.1},
+    {'psig': 95, 'hfg': 2055.0},
+    {'psig': 100, 'hfg': 2049.0},
+    {'psig': 105, 'hfg': 2042.9},
+    {'psig': 110, 'hfg': 2037.3},
+    {'psig': 115, 'hfg': 2031.3},
+    {'psig': 120, 'hfg': 2025.7},
+    {'psig': 125, 'hfg': 2020.1},
+    {'psig': 130, 'hfg': 2014.8},
+    {'psig': 135, 'hfg': 2009.4},
+    {'psig': 140, 'hfg': 2004.3},
+    {'psig': 145, 'hfg': 1999.4},
+    {'psig': 150, 'hfg': 1994.3},
+    {'psig': 155, 'hfg': 1989.4},
+    {'psig': 160, 'hfg': 1984.8},
+    {'psig': 165, 'hfg': 1980.4},
+    {'psig': 170, 'hfg': 1975.7},
+    {'psig': 175, 'hfg': 1971.5},
+    {'psig': 180, 'hfg': 1967.3},
+    {'psig': 185, 'hfg': 1962.9},
+    {'psig': 190, 'hfg': 1957.7},
+    {'psig': 195, 'hfg': 1953.3},
+    {'psig': 200, 'hfg': 1948.7},
+    {'psig': 205, 'hfg': 1944.5},
+    {'psig': 210, 'hfg': 1940.3},
+    {'psig': 215, 'hfg': 1936.2},
+    {'psig': 220, 'hfg': 1932.2},
+    {'psig': 225, 'hfg': 1928.0},
+    {'psig': 230, 'hfg': 1924.1},
+    {'psig': 235, 'hfg': 1920.1},
+    {'psig': 240, 'hfg': 1916.4},
+    {'psig': 245, 'hfg': 1912.4},
+    {'psig': 250, 'hfg': 1908.7},
+  ];
+}

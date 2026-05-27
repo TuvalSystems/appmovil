@@ -1,4 +1,8 @@
 class SteamTrapSizingRequest {
+  //cliente
+  final int? customerId;
+  final String? customerRuc;
+
   final String process;
   final String trapType;
   final String calculationMethod;
@@ -25,6 +29,8 @@ class SteamTrapSizingRequest {
   final double loadWithSafetyFactorKg;
 
   const SteamTrapSizingRequest({
+    required this.customerId,
+    required this.customerRuc,
     required this.process,
     required this.trapType,
     required this.calculationMethod,
@@ -49,6 +55,8 @@ class SteamTrapSizingRequest {
 
   Map<String, dynamic> toJson() {
     return {
+      'customer_id': customerId,
+      'customer_ruc': customerRuc,
       'process': process,
       'trapType': trapType,
       'calculationMethod': calculationMethod,

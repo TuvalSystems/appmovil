@@ -20,5 +20,16 @@ class SteamTrapDatasource {
     return response;
   }
 
- 
+  Future<Map<String, dynamic>> createDraftQuote(
+    SteamTrapSizingRequest request,
+  ) async {
+    final response = await ApiHandler.run(() {
+      return _dio.post(
+        SteamTrapEndpoints.createQuote,
+        data: request.toJson(),
+        options: Options(extra: {'requiresAuth': true}),
+      );
+    });
+    return response;
+  }
 }

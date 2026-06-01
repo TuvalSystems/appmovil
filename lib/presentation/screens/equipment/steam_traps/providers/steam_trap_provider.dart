@@ -15,6 +15,8 @@ class SteamTrapProvider extends ChangeNotifier {
   Timer? _customerSearchDebounce;
 
   bool isSending = false;
+  bool isCreateQuote = false;
+
   String? sendMessage;
   String? generatedPdfUrl;
 
@@ -363,6 +365,41 @@ class SteamTrapProvider extends ChangeNotifier {
       sendMessage = e.toString().replaceAll('Exception: ', '');
     } finally {
       isSending = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> createDraftQuote() async {
+    if (selectedCustomer == null) {
+      sendMessage = 'Seleccione un cliente antes de crear la cotización.';
+      notifyListeners();
+      return;
+    }
+
+    final validation = validationMessage;
+
+    if (validation != null) {
+      sendMessage = validation;
+      notifyListeners();
+      return;
+    }
+
+    isCreateQuote = true;
+    sendMessage = null;
+    notifyListeners();
+
+    try {
+      final request = buildSizingRequest();
+
+      final response = await steamTrapDataSource.createDraftQuote(request);
+
+      sendMessage =
+          response['message']?.toString() ??
+          'Cotización borrador creada correctamente.';
+    } catch (e) {
+      sendMessage = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      isCreateQuote = false;
       notifyListeners();
     }
   }

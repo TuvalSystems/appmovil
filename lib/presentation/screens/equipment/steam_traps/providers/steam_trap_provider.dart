@@ -7,6 +7,7 @@ import 'package:tuvalapp/infrastructure/models/steam_traps/steam_trap_customer.d
 import 'package:tuvalapp/infrastructure/models/steam_traps/steam_trap_sizing_request.dart';
 import 'package:tuvalapp/presentation/screens/equipment/steam_traps/constants/steam_traps_catalogs.dart';
 import 'package:tuvalapp/presentation/screens/equipment/steam_traps/helpers/steam_trap_calculator.dart';
+import 'package:tuvalapp/presentation/shared/widgets/app_toast.dart';
 
 class SteamTrapProvider extends ChangeNotifier {
   final SteamTrapDatasource steamTrapDataSource = SteamTrapDatasource();
@@ -18,6 +19,7 @@ class SteamTrapProvider extends ChangeNotifier {
   bool isCreateQuote = false;
 
   String? sendMessage;
+  AppToastType? sendMessageType;
   String? generatedPdfUrl;
 
   String selectedProcess = 'Marmita';
@@ -334,6 +336,7 @@ class SteamTrapProvider extends ChangeNotifier {
   Future<void> generateSizingPdf() async {
     if (selectedCustomer == null) {
       sendMessage = 'Seleccione un cliente antes de generar el PDF.';
+      sendMessageType = AppToastType.warning;
       notifyListeners();
       return;
     }
@@ -342,12 +345,14 @@ class SteamTrapProvider extends ChangeNotifier {
 
     if (validation != null) {
       sendMessage = validation;
+      sendMessageType = AppToastType.warning;
       notifyListeners();
       return;
     }
 
     isSending = true;
     sendMessage = null;
+    sendMessageType = null;
     notifyListeners();
 
     try {
@@ -361,8 +366,10 @@ class SteamTrapProvider extends ChangeNotifier {
       generatedPdfUrl = pdfUrl;
       sendMessage =
           response['message']?.toString() ?? 'PDF generado correctamente.';
+      sendMessageType = AppToastType.success;
     } catch (e) {
       sendMessage = e.toString().replaceAll('Exception: ', '');
+      sendMessageType = AppToastType.error;
     } finally {
       isSending = false;
       notifyListeners();
@@ -372,6 +379,7 @@ class SteamTrapProvider extends ChangeNotifier {
   Future<void> createDraftQuote() async {
     if (selectedCustomer == null) {
       sendMessage = 'Seleccione un cliente antes de crear la cotización.';
+      sendMessageType = AppToastType.warning;
       notifyListeners();
       return;
     }
@@ -380,12 +388,14 @@ class SteamTrapProvider extends ChangeNotifier {
 
     if (validation != null) {
       sendMessage = validation;
+      sendMessageType = AppToastType.warning;
       notifyListeners();
       return;
     }
 
     isCreateQuote = true;
     sendMessage = null;
+    sendMessageType = null;
     notifyListeners();
 
     try {
@@ -396,6 +406,7 @@ class SteamTrapProvider extends ChangeNotifier {
       sendMessage =
           response['message']?.toString() ??
           'Cotización borrador creada correctamente.';
+      sendMessageType = AppToastType.success;
     } catch (e) {
       sendMessage = e.toString().replaceAll('Exception: ', '');
     } finally {

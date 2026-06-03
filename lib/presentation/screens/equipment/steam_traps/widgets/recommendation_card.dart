@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/presentation/screens/equipment/steam_traps/providers/steam_trap_provider.dart';
+import 'package:tuvalapp/presentation/shared/widgets/app_action_button.dart';
 import 'package:tuvalapp/presentation/shared/widgets/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,9 +12,7 @@ class RecommendationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<SteamTrapProvider>();
     final validationMessage = provider.validationMessage;
-    final isBusy = provider.isSending || provider.isCreateQuote;
     final hasValidation = validationMessage != null;
-    final canExecuteActions = !isBusy && !hasValidation;
 
     return Container(
       width: double.infinity,
@@ -51,8 +50,7 @@ class RecommendationCard extends StatelessWidget {
 
           _ActionsBox(
             provider: provider,
-            isBusy: isBusy,
-            canExecuteActions: canExecuteActions,
+            hasValidation: hasValidation,
             onOpenPdf: () => _openGeneratedPdf(context, provider),
           ),
 
@@ -278,19 +276,24 @@ class _FormulaBox extends StatelessWidget {
 
 class _ActionsBox extends StatelessWidget {
   final SteamTrapProvider provider;
-  final bool isBusy;
-  final bool canExecuteActions;
+  final bool hasValidation;
   final VoidCallback onOpenPdf;
 
   const _ActionsBox({
     required this.provider,
-    required this.isBusy,
-    required this.canExecuteActions,
+    required this.hasValidation,
     required this.onOpenPdf,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isGeneratingPdf = provider.isSending;
+    final isGeneratingQuote = provider.isCreateQuote;
+    final isBusy = isGeneratingPdf || isGeneratingQuote;
+
+    final hasGeneratedPdf = provider.generatedPdfUrl != null &&
+        provider.generatedPdfUrl!.trim().isNotEmpty;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(13),
@@ -316,14 +319,15 @@ class _ActionsBox extends StatelessWidget {
               ),
             ],
           ),
+
           const SizedBox(height: 12),
 
-          _ActionButton(
-            enabled: canExecuteActions,
-            loading: provider.isSending,
-            loadingLabel: 'Generando PDF...',
+          AppActionButton(
             label: 'Generar PDF técnico',
+            loadingLabel: 'Generando PDF...',
             icon: Icons.picture_as_pdf_outlined,
+            isLoading: isGeneratingPdf,
+            isDisabled: hasValidation || isGeneratingQuote,
             onPressed: () async {
               await provider.generateSizingPdf();
 
@@ -333,27 +337,26 @@ class _ActionsBox extends StatelessWidget {
             },
           ),
 
-          if (provider.generatedPdfUrl != null &&
-              provider.generatedPdfUrl!.trim().isNotEmpty) ...[
+          if (hasGeneratedPdf) ...[
             const SizedBox(height: 10),
-            _ActionButton(
-              enabled: !isBusy,
-              loading: false,
-              label: 'Abrir PDF generado',
+            AppActionButton(
+              label: 'Ver PDF',
               icon: Icons.open_in_new_rounded,
-              outlined: true,
+              variant: AppActionButtonType.outline,
+              isLoading: false,
+              isDisabled: isBusy,
               onPressed: onOpenPdf,
             ),
           ],
 
           const SizedBox(height: 10),
 
-          _ActionButton(
-            enabled: canExecuteActions,
-            loading: provider.isCreateQuote,
-            loadingLabel: 'Creando cotización...',
-            label: 'Crear cotización borrador',
+          AppActionButton(
+            label: 'Generar Cotización',
+            loadingLabel: 'Generando cotización...',
             icon: Icons.request_quote_outlined,
+            isLoading: isGeneratingQuote,
+            isDisabled: hasValidation || isGeneratingPdf,
             onPressed: () async {
               await provider.createDraftQuote();
 
@@ -377,73 +380,6 @@ class _ActionsBox extends StatelessWidget {
       message: message,
       type: provider.sendMessageType ?? AppToastType.info,
       duration: const Duration(seconds: 4),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final bool enabled;
-  final bool loading;
-  final bool outlined;
-  final String label;
-  final String? loadingLabel;
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const _ActionButton({
-    required this.enabled,
-    required this.loading,
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-    this.loadingLabel,
-    this.outlined = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final child = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (loading)
-          const SizedBox(
-            width: 17,
-            height: 17,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.2,
-              color: Colors.white,
-            ),
-          )
-        else
-          Icon(icon, size: 19),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            loading ? loadingLabel ?? label : label,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-
-    if (outlined) {
-      return SizedBox(
-        width: double.infinity,
-        height: 44,
-        child: OutlinedButton(
-          onPressed: enabled && !loading ? onPressed : null,
-          child: child,
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: double.infinity,
-      height: 44,
-      child: ElevatedButton(
-        onPressed: enabled && !loading ? onPressed : null,
-        child: child,
-      ),
     );
   }
 }

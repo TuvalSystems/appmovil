@@ -41,22 +41,24 @@ class SideMenu extends StatelessWidget {
                 ExpansionTile(
                   leading: const Icon(
                     Icons.precision_manufacturing_outlined,
-                    color: AppColors.brand,
                     size: 20,
                   ),
                   title: const Text(
                     'Gestión de Equipos',
-                    style: TextStyle(color: AppColors.brand, fontSize: 14),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                   iconColor: AppColors.brand,
                   collapsedIconColor: AppColors.brand,
+                  textColor: AppColors.brand,
+                  collapsedTextColor: AppColors.brand,
                   childrenPadding: const EdgeInsets.only(left: 20),
                   children: [
                     _SubMenuItem(
                       label: 'Trampas de Vapor',
-                      isActive: true,
+                      isActive: currentRoute == AppRouter.steamTraps,
                       onTap: () {
                         Navigator.pop(context);
+                        if (currentRoute == AppRouter.steamTraps) return;
                         Navigator.pushNamed(context, AppRouter.steamTraps);
                       },
                     ),
@@ -68,7 +70,7 @@ class SideMenu extends StatelessWidget {
           ),
 
           // --- BOTÓN DE CIERRE DE SESIÓN ---
-          const Divider(color: AppColors.border),
+          const Divider(),
           const _SafeLogout(),
           const SizedBox(height: 10),
         ],
@@ -85,10 +87,10 @@ class _SafeLogout extends StatelessWidget {
       top: false,
       child: ListTile(
         dense: true,
-        leading: const Icon(Icons.logout, color: AppColors.brand),
+        leading: const Icon(Icons.logout),
         title: const Text(
           'Cerrar Sesión',
-          style: TextStyle(color: AppColors.brand, fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         onTap: () async {
           final navigator = Navigator.of(context);
@@ -114,7 +116,7 @@ class _SideMenuHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 42, 16, 20),
       decoration: const BoxDecoration(
         color: AppColors.brand,
-        border: Border(bottom: BorderSide(color: AppColors.brand, width: 0.5)),
+        border: Border(bottom: BorderSide(color: AppColors.card, width: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,12 +200,9 @@ class _SubMenuItem extends StatelessWidget {
       child: ListTile(
         dense: true,
         visualDensity: const VisualDensity(vertical: -4),
-
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-
         selected: isActive,
-        selectedTileColor: AppColors.brand.withValues(alpha: 0.1),
-
+        selectedTileColor: AppColors.brandSoft,
         leading: Icon(Icons.subdirectory_arrow_right, color: color, size: 16),
         title: Text(
           label,

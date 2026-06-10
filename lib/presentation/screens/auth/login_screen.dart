@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:tuvalapp/presentation/shared/widgets/app_action_button.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -207,26 +208,13 @@ class _LoginFormState extends State<_LoginForm> {
               ),
 
               const SizedBox(height: 26),
-
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: isPosting ? null : _submit,
-                  child: isPosting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Ingresar',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                ),
+              AppActionButton(
+                label: 'Ingresar',
+                loadingLabel: 'Validando',
+                isLoading: isPosting,
+                isDisabled: isPosting,
+                variant: AppActionButtonType.primary,
+                onPressed: isPosting ? null : _submit,
               ),
             ],
           ),

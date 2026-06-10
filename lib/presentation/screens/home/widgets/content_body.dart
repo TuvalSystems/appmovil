@@ -29,40 +29,7 @@ class ContentBody extends StatelessWidget {
             children: [
               _WelcomeCard(user: currentUser),
               const SizedBox(height: 16),
-
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  SizedBox(
-                    width: isWide
-                        ? (constraints.maxWidth - 12) / 2
-                        : constraints.maxWidth,
-                    child: _InfoCard(
-                      icon: Icons.person_outline,
-                      title: 'Usuario',
-                      value: currentUser.loginId,
-                      subtitle: currentUser.fullName,
-                    ),
-                  ),
-                  SizedBox(
-                    width: isWide
-                        ? (constraints.maxWidth - 12) / 2
-                        : constraints.maxWidth,
-                    child: _InfoCard(
-                      icon: Icons.verified_user_outlined,
-                      title: 'Perfil',
-                      value: 'Perfil ${currentUser.appProfileName}',
-                      subtitle: currentUser.status == true
-                          ? 'Usuario activo'
-                          : 'Usuario inactivo',
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
+            
               const Text(
                 'Accesos rápidos',
                 style: TextStyle(
@@ -95,10 +62,6 @@ class ContentBody extends StatelessWidget {
                   
                 ],
               ),
-
-              const SizedBox(height: 20),
-
-              _NoticeCard(),
             ],
           ),
         );
@@ -187,90 +150,6 @@ class _WelcomeCard extends StatelessWidget {
   }
 }
 
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String value;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.brand.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              icon,
-              color: AppColors.brand,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  value,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.text,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.muted,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _ModuleCard extends StatelessWidget {
   const _ModuleCard({
@@ -370,41 +249,3 @@ class _ModuleCard extends StatelessWidget {
   }
 }
 
-class _NoticeCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.brand.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.brand.withValues(alpha: 0.18),
-        ),
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: AppColors.brand,
-            size: 22,
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Desde el menú lateral puedes acceder a los módulos disponibles. '
-              'A medida que se integren nuevas funciones, aparecerán en este panel.',
-              style: TextStyle(
-                color: AppColors.text,
-                fontSize: 13,
-                height: 1.35,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'TUVAL',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme(selectedColor: 0).theme(),
+      theme: const AppTheme().theme(),
       home: _buildHome(authStatus),
       routes: AppRouter.getRoutes(),
       builder: (context, child) {
@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
           left: false,
           right: false,
           bottom: true,
-          child: child!,
+          child: child ?? const SizedBox.shrink(),
         );
       },
     );

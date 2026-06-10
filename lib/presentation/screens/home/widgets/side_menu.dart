@@ -4,6 +4,7 @@ import 'package:tuvalapp/config/router/app_router.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
 
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
+import 'package:tuvalapp/presentation/screens/home/widgets/user_initials_avatar.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({super.key});
@@ -12,39 +13,13 @@ class SideMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
-
+    final fullName = user?.fullName ?? 'Usuario';
+    final currentRoute = ModalRoute.of(context)?.settings.name;
     //nuevo drawer menu
     return Drawer(
-      backgroundColor: Colors.white,
       child: Column(
         children: [
-          UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
-              color: AppColors.brand,
-              border: Border(
-                bottom: BorderSide(
-                  color: AppColors.card,
-                  width: 0.5,
-                ), // Una línea neón sutil
-              ),
-            ),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: AppColors.card,
-              child: Icon(Icons.person, color: AppColors.brand, size: 30),
-            ),
-            accountName: Text(
-              user?.fullName ?? 'Cargando...',
-              style: TextStyle(
-                color: AppColors.text,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            accountEmail: Text(
-              'ID: ${user?.loginId ?? '---'}',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
-            ),
-          ),
+          _SideMenuHeader(fullName: fullName),
 
           //SECCION DE NAVEGACIÓN
           Expanded(
@@ -54,6 +29,9 @@ class SideMenu extends StatelessWidget {
                 _DrawerItem(
                   icon: Icons.dashboard_customize_outlined,
                   label: 'Dashboard',
+                  isActive:
+                      currentRoute == null ||
+                      currentRoute == Navigator.defaultRouteName,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.of(context).popUntil((route) => route.isFirst);
@@ -124,26 +102,75 @@ class _SafeLogout extends StatelessWidget {
   }
 }
 
+class _SideMenuHeader extends StatelessWidget {
+  final String fullName;
+
+  const _SideMenuHeader({required this.fullName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 42, 16, 20),
+      decoration: const BoxDecoration(
+        color: AppColors.brand,
+        border: Border(bottom: BorderSide(color: AppColors.brand, width: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          UserInitialsAvatar(
+            name: fullName,
+            radius: 30,
+            backgroundColor: AppColors.card,
+            textColor: AppColors.brand,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            fullName,
+            style: const TextStyle(
+              color: AppColors.onBrand,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 //widget para menu sin submenu
 class _DrawerItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final bool isActive;
 
   const _DrawerItem({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.isActive = false,
   });
+
   @override
   Widget build(BuildContext context) {
+    final color = isActive ? AppColors.brand : AppColors.muted;
+
     return ListTile(
       dense: true,
       visualDensity: const VisualDensity(vertical: -4),
-      leading: Icon(icon, color: AppColors.brand, size: 20),
+      selected: isActive,
+      selectedTileColor: AppColors.brandSoft,
+      leading: Icon(icon, color: color, size: 20),
       title: Text(
         label,
-        style: TextStyle(color: AppColors.brand, fontSize: 14),
+        style: TextStyle(
+          color: color,
+          fontSize: 14,
+          fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+        ),
       ),
       onTap: onTap,
     );

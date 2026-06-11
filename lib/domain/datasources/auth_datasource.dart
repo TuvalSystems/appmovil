@@ -1,5 +1,5 @@
-import 'package:tuvalapp/domain/entities/user.dart';
+import 'package:tuvalapp/infrastructure/models/auth/login_response_model.dart';
 
 abstract class AuthDatasource {
-  Future<User> login(String username, String password);
+  Future<LoginResponseModel> login(String username, String password);
 }

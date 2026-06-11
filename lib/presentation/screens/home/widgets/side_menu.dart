@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tuvalapp/config/router/app_router.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
-
+import 'package:tuvalapp/infrastructure/models/menu/app_menu_model.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/user_initials_avatar.dart';
+import 'package:tuvalapp/presentation/shared/helpers/mobile_menu_mapper.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({super.key});
@@ -15,6 +15,7 @@ class SideMenu extends StatelessWidget {
     final user = authProvider.user;
     final fullName = user?.fullName ?? 'Usuario';
     final currentRoute = ModalRoute.of(context)?.settings.name;
+    final menuItems = authProvider.appMenu?.items ?? [];
     //nuevo drawer menu
     return Drawer(
       child: Column(
@@ -23,50 +24,16 @@ class SideMenu extends StatelessWidget {
 
           //SECCION DE NAVEGACIÓN
           Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                _DrawerItem(
-                  icon: Icons.dashboard_customize_outlined,
-                  label: 'Dashboard',
-                  isActive:
-                      currentRoute == null ||
-                      currentRoute == Navigator.defaultRouteName,
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                ),
-                //Item de segundo nivel (Colpasable)
-                ExpansionTile(
-                  leading: const Icon(
-                    Icons.precision_manufacturing_outlined,
-                    size: 20,
+            child: menuItems.isEmpty
+                ? const _EmptyMenuMessage()
+                : ListView(
+                    padding: EdgeInsets.zero,
+                    children: menuItems
+                        .map(
+                          (item) => _buildMenuItem(context, item, currentRoute),
+                        )
+                        .toList(),
                   ),
-                  title: const Text(
-                    'Gestión de Equipos',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
-                  iconColor: AppColors.brand,
-                  collapsedIconColor: AppColors.brand,
-                  textColor: AppColors.brand,
-                  collapsedTextColor: AppColors.brand,
-                  childrenPadding: const EdgeInsets.only(left: 20),
-                  children: [
-                    _SubMenuItem(
-                      label: 'Trampas de Vapor',
-                      isActive: currentRoute == AppRouter.steamTraps,
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (currentRoute == AppRouter.steamTraps) return;
-                        Navigator.pushNamed(context, AppRouter.steamTraps);
-                      },
-                    ),
-                  ],
-                ),
-                //aqui agregar otro drawItem o ExpansionTitle
-              ],
-            ),
           ),
 
           // --- BOTÓN DE CIERRE DE SESIÓN ---
@@ -74,6 +41,123 @@ class SideMenu extends StatelessWidget {
           const _SafeLogout(),
           const SizedBox(height: 10),
         ],
+      ),
+    );
+  }
+
+  //limpieza de menu
+  Widget _buildMenuItem(
+    BuildContext context,
+    AppMenuItem item,
+    String? currentRoute,
+  ) {
+    final hasChildren = item.children.isNotEmpty;
+    final isActive = _isMenuItemActive(item, currentRoute);
+
+    if (hasChildren) {
+      return ExpansionTile(
+        key: PageStorageKey(item.key),
+        initiallyExpanded: isActive,
+        leading: Icon(
+          MobileMenuMapper.resolveIcon(item.icon),
+          size: 20,
+          color: isActive ? AppColors.brand : AppColors.muted,
+        ),
+        title: Text(
+          item.label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+            color: isActive ? AppColors.brand : AppColors.muted,
+          ),
+        ),
+        iconColor: AppColors.brand,
+        collapsedIconColor: AppColors.brand,
+        textColor: AppColors.brand,
+        collapsedTextColor: AppColors.brand,
+        childrenPadding: const EdgeInsets.only(left: 20),
+        children: item.children.map((child) {
+          final childHasChildren = child.children.isNotEmpty;
+
+          if (childHasChildren) {
+            return _buildMenuItem(context, child, currentRoute);
+          }
+
+          return _SubMenuItem(
+            icon: MobileMenuMapper.resolveIcon(child.icon),
+            label: child.label,
+            isActive: _isMenuItemActive(child, currentRoute),
+            onTap: () => _navigateToItem(context, child, currentRoute),
+          );
+        }).toList(),
+      );
+    }
+
+    return _DrawerItem(
+      icon: MobileMenuMapper.resolveIcon(item.icon),
+      label: item.label,
+      isActive: isActive,
+      onTap: () => _navigateToItem(context, item, currentRoute),
+    );
+  }
+
+  static bool _isMenuItemActive(AppMenuItem item, String? currentRoute) {
+    final targetRoute = MobileMenuMapper.resolveRoute(item.route);
+
+    if (_isSameRoute(targetRoute, currentRoute)) {
+      return true;
+    }
+
+    return item.children.any((child) => _isMenuItemActive(child, currentRoute));
+  }
+
+  static bool _isSameRoute(String? targetRoute, String? currentRoute) {
+    if (targetRoute == null) return false;
+
+    if (targetRoute == Navigator.defaultRouteName) {
+      return currentRoute == null || currentRoute == Navigator.defaultRouteName;
+    }
+
+    return currentRoute == targetRoute;
+  }
+
+  static void _navigateToItem(
+    BuildContext context,
+    AppMenuItem item,
+    String? currentRoute,
+  ) {
+    final targetRoute = MobileMenuMapper.resolveRoute(item.route);
+    if (targetRoute == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ruta no configurada: ${item.label}')),
+      );
+      return;
+    }
+    Navigator.pop(context);
+    if (_isSameRoute(targetRoute, currentRoute)) return;
+
+    if (targetRoute == Navigator.defaultRouteName) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      return;
+    }
+
+    Navigator.pushNamed(context, targetRoute);
+  }
+}
+
+class _EmptyMenuMessage extends StatelessWidget {
+  const _EmptyMenuMessage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Text(
+          'No hay opciones de menú disponibles.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppColors.muted, fontSize: 13),
+        ),
       ),
     );
   }
@@ -181,14 +265,16 @@ class _DrawerItem extends StatelessWidget {
 
 // NUEVO: Widget para las opciones de segundo nivel (sub-menú)
 class _SubMenuItem extends StatelessWidget {
+  final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool isActive; // 1. Nueva propiedad para saber si es la pantalla actual
+  final bool isActive;
 
   const _SubMenuItem({
+    required this.icon,
     required this.label,
     required this.onTap,
-    this.isActive = false, // Por defecto es falso
+    this.isActive = false,
   });
 
   @override
@@ -203,7 +289,7 @@ class _SubMenuItem extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         selected: isActive,
         selectedTileColor: AppColors.brandSoft,
-        leading: Icon(Icons.subdirectory_arrow_right, color: color, size: 16),
+        leading: Icon(icon, color: color, size: 16),
         title: Text(
           label,
           style: TextStyle(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tuvalapp/config/http/api_exception.dart';
 import 'package:tuvalapp/domain/entities/user.dart';
 import 'package:tuvalapp/infrastructure/datasources/sanctum_datasource.dart';
+import 'package:tuvalapp/infrastructure/models/menu/app_menu_model.dart';
 import 'package:tuvalapp/infrastructure/services/key_value_storage_service.dart';
 
 enum AuthStatus {
@@ -17,6 +18,7 @@ class AuthProvider extends ChangeNotifier {
 
   AuthStatus authStatus = AuthStatus.checking;
   User? user;
+  AppMenu? appMenu;
   bool isPosting = false;
   String? errorMessage;
 
@@ -31,20 +33,21 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final userResponse = await sanctumDatasource.login(username, password);
+      final loginResponse = await sanctumDatasource.login(username, password);
 
-      if (userResponse.token.isEmpty) {
+      if (loginResponse.token.isEmpty) {
         throw Exception('El backend no devolvió token');
       }
 
-      user = userResponse;
+      user = loginResponse.user;
+      appMenu = loginResponse.appMenu;
 
       await keyValueStorageService.setKeyValue(
         'auth_token',
-        userResponse.token,
+        loginResponse.token,
       );
 
-      authStatus = userResponse.mustChangePassword
+      authStatus = loginResponse.user.mustChangePassword
           ? AuthStatus.mustChangePassword
           : AuthStatus.authenticated;
 
@@ -58,6 +61,7 @@ class AuthProvider extends ChangeNotifier {
 
       isPosting = false;
       user = null;
+      appMenu = null;
       authStatus = AuthStatus.notAuthenticated;
       errorMessage = _cleanError(e);
       notifyListeners();
@@ -71,6 +75,7 @@ class AuthProvider extends ChangeNotifier {
     await keyValueStorageService.removeKey('auth_token');
 
     user = null;
+    appMenu = null;
     isPosting = false;
     errorMessage = message;
     authStatus = AuthStatus.notAuthenticated;
@@ -90,6 +95,7 @@ class AuthProvider extends ChangeNotifier {
 
     if (token == null || token.isEmpty) {
       user = null;
+      appMenu = null;
       isPosting = false;
       authStatus = AuthStatus.notAuthenticated;
       notifyListeners();
@@ -98,8 +104,9 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final userResponse = await sanctumDatasource.getCurrentUser(token);
-
+      final menuResponse = await sanctumDatasource.getMobileMenu(token);
       user = userResponse;
+      appMenu = menuResponse;
       isPosting = false;
       errorMessage = null;
 

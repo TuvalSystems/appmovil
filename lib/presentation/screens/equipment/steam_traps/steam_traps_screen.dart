@@ -4,6 +4,7 @@ import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:tuvalapp/presentation/screens/equipment/steam_traps/providers/steam_trap_provider.dart';
 import 'package:tuvalapp/presentation/screens/equipment/steam_traps/widgets/steam_trap_main_card.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/side_menu.dart';
+import 'package:tuvalapp/presentation/shared/widgets/tuval_app_bar.dart';
 
 class SteamTrapsScreen extends StatelessWidget {
   const SteamTrapsScreen({super.key});
@@ -25,14 +26,7 @@ class _SteamTrapsView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.bg,
       drawer: const SideMenu(),
-      appBar: AppBar(
-        title: const Text(
-          'Trampas de Vapor',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: AppColors.brand,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: const TuvalAppBar(title: 'Trampas de Vapor'),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {

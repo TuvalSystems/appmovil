@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:tuvalapp/infrastructure/models/menu/app_menu_model.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
+import 'package:tuvalapp/presentation/providers/point_sales_provider.dart';
+import 'package:tuvalapp/presentation/screens/home/widgets/side_menu_header.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/user_initials_avatar.dart';
 import 'package:tuvalapp/presentation/shared/helpers/mobile_menu_mapper.dart';
 
@@ -20,7 +22,7 @@ class SideMenu extends StatelessWidget {
     return Drawer(
       child: Column(
         children: [
-          _SideMenuHeader(fullName: fullName),
+          SideMenuHeader(fullName: fullName),
 
           //SECCION DE NAVEGACIÓN
           Expanded(
@@ -179,8 +181,10 @@ class _SafeLogout extends StatelessWidget {
         onTap: () async {
           final navigator = Navigator.of(context);
           final authProvider = context.read<AuthProvider>();
+          final pointProvider = context.read<PointSalesProvider>();
           navigator.pop();
           navigator.popUntil((route) => route.isFirst);
+          await pointProvider.clearPointSales();
           await authProvider.logout();
         },
       ),
@@ -188,43 +192,7 @@ class _SafeLogout extends StatelessWidget {
   }
 }
 
-class _SideMenuHeader extends StatelessWidget {
-  final String fullName;
 
-  const _SideMenuHeader({required this.fullName});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 42, 16, 20),
-      decoration: const BoxDecoration(
-        color: AppColors.brand,
-        border: Border(bottom: BorderSide(color: AppColors.card, width: 0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          UserInitialsAvatar(
-            name: fullName,
-            radius: 30,
-            backgroundColor: AppColors.card,
-            textColor: AppColors.brand,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            fullName,
-            style: const TextStyle(
-              color: AppColors.onBrand,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 //widget para menu sin submenu
 class _DrawerItem extends StatelessWidget {

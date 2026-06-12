@@ -333,7 +333,11 @@ class SteamTrapProvider extends ChangeNotifier {
     return 'Revisar condición técnica';
   }
 
-  Future<void> generateSizingPdf() async {
+  Future<void> generateSizingPdf({
+    required int pvId,
+    required String pvCode,
+    required String pvDescription,
+  }) async {
     if (selectedCustomer == null) {
       sendMessage = 'Seleccione un cliente antes de generar el PDF.';
       sendMessageType = AppToastType.warning;
@@ -356,7 +360,11 @@ class SteamTrapProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final request = buildSizingRequest();
+      final request = buildSizingRequest(
+        pvId: pvId,
+        pvCode: pvCode,
+        pvDescription: pvDescription,
+      );
 
       final response = await steamTrapDataSource.generateSizingPdf(request);
 
@@ -376,7 +384,11 @@ class SteamTrapProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> createDraftQuote() async {
+  Future<void> createDraftQuote({
+    required int pvId,
+    required String pvCode,
+    required String pvDescription,
+  }) async {
     if (selectedCustomer == null) {
       sendMessage = 'Seleccione un cliente antes de crear la cotización.';
       sendMessageType = AppToastType.warning;
@@ -399,7 +411,11 @@ class SteamTrapProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final request = buildSizingRequest();
+      final request = buildSizingRequest(
+        pvId: pvId,
+        pvCode: pvCode,
+        pvDescription: pvDescription,
+      );
 
       final response = await steamTrapDataSource.createDraftQuote(request);
 
@@ -415,7 +431,11 @@ class SteamTrapProvider extends ChangeNotifier {
     }
   }
 
-  SteamTrapSizingRequest buildSizingRequest() {
+  SteamTrapSizingRequest buildSizingRequest({
+    required int pvId,
+    required String pvCode,
+    required String pvDescription,
+  }) {
     final isHeating = isHeatingProcess;
     final knownLoad = toDouble(knownLoadController.text);
     final boilerBhp = toDouble(boilerBhpController.text);
@@ -423,6 +443,9 @@ class SteamTrapProvider extends ChangeNotifier {
     return SteamTrapSizingRequest(
       customerId: selectedCustomer?.id,
       customerRuc: selectedCustomer?.ruc,
+      pvId: pvId,
+      pvCode: pvCode,
+      pvDescription: pvDescription,
       process: selectedProcess,
       trapType: recommendedTrap,
       calculationMethod: calculationMethod,

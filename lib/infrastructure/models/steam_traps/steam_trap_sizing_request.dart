@@ -3,6 +3,10 @@ class SteamTrapSizingRequest {
   final int? customerId;
   final String? customerRuc;
 
+  final int? pvId;
+  final String? pvDescription;
+  final String? pvCode;
+
   final String process;
   final String trapType;
   final String calculationMethod;
@@ -31,6 +35,9 @@ class SteamTrapSizingRequest {
   const SteamTrapSizingRequest({
     required this.customerId,
     required this.customerRuc,
+    required this.pvId,
+    required this.pvDescription,
+    required this.pvCode,
     required this.process,
     required this.trapType,
     required this.calculationMethod,
@@ -57,6 +64,11 @@ class SteamTrapSizingRequest {
     return {
       'customer_id': customerId,
       'customer_ruc': customerRuc,
+
+      'pvId'  : pvId,
+      'pvDescription': pvDescription,
+      'pvCode': pvCode,
+
       'process': process,
       'trapType': trapType,
       'calculationMethod': calculationMethod,

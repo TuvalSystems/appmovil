@@ -86,11 +86,11 @@ class _LoginFormState extends State<_LoginForm> {
 
     if (!success && mounted) {
       final errorMsg = authProvider.errorMessage ?? 'Error al iniciar sesión.';
-
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(backgroundColor: Colors.redAccent, content: Text(errorMsg)),
       );
+      return;
     }
   }
 

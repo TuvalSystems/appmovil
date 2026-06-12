@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tuvalapp/presentation/providers/point_sales_provider.dart';
 import 'package:tuvalapp/presentation/screens/equipment/steam_traps/providers/steam_trap_provider.dart';
 import 'package:tuvalapp/presentation/shared/widgets/app_action_button.dart';
 import 'package:tuvalapp/presentation/shared/widgets/app_toast.dart';
@@ -287,11 +288,13 @@ class _ActionsBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pointSalesProvider = context.watch<PointSalesProvider>();
     final isGeneratingPdf = provider.isSending;
     final isGeneratingQuote = provider.isCreateQuote;
     final isBusy = isGeneratingPdf || isGeneratingQuote;
 
-    final hasGeneratedPdf = provider.generatedPdfUrl != null &&
+    final hasGeneratedPdf =
+        provider.generatedPdfUrl != null &&
         provider.generatedPdfUrl!.trim().isNotEmpty;
 
     return Container(
@@ -329,7 +332,21 @@ class _ActionsBox extends StatelessWidget {
             isLoading: isGeneratingPdf,
             isDisabled: hasValidation || isGeneratingQuote,
             onPressed: () async {
-              await provider.generateSizingPdf();
+              final pvId = pointSalesProvider.selectedPvId;
+
+              if (pvId == null) {
+                AppToast.show(
+                  context,
+                  message: 'No se ha seleccionado un punto de venta.',
+                  type: AppToastType.warning,
+                );
+                return;
+              }
+              await provider.generateSizingPdf(
+                pvId: pvId,
+                pvCode: pointSalesProvider.selectedPvCode,
+                pvDescription: pointSalesProvider.selectedPvDescription,
+              );
 
               if (!context.mounted) return;
 
@@ -358,10 +375,21 @@ class _ActionsBox extends StatelessWidget {
             isLoading: isGeneratingQuote,
             isDisabled: hasValidation || isGeneratingPdf,
             onPressed: () async {
-              await provider.createDraftQuote();
-
+              final pvId = pointSalesProvider.selectedPvId;
+              if (pvId == null) {
+                AppToast.show(
+                  context,
+                  message: 'No se ha seleccionado un punto de venta.',
+                  type: AppToastType.warning,
+                );
+                return;
+              }
+              await provider.createDraftQuote(
+                pvId: pvId,
+                pvCode: pointSalesProvider.selectedPvCode,
+                pvDescription: pointSalesProvider.selectedPvDescription,
+              );
               if (!context.mounted) return;
-
               _showProviderMessage(context, provider);
             },
           ),

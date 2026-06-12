@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/infrastructure/services/app_update_service.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
+import 'package:tuvalapp/presentation/providers/point_sales_provider.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/content_body.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/side_menu.dart';
+import 'package:tuvalapp/presentation/shared/widgets/tuval_app_bar.dart';
 import 'package:tuvalapp/presentation/widgets/app_update_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,12 +20,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _checkingUpdate = false;
   bool _updateDialogShown = false;
+  bool _pointSalesRequested = false;
 
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPointSales();
       _checkForUpdates();
     });
   }
@@ -54,29 +58,38 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _loadPointSales() async {
+    if (_pointSalesRequested) return;
+    _pointSalesRequested = true;
+
+    try {
+      final pointSalesProvider = context.read<PointSalesProvider>();
+      await pointSalesProvider.loadPointSales();
+      if (!mounted) return;
+      if (pointSalesProvider.errorMessage != null) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.orangeAccent,
+            content: Text(pointSalesProvider.errorMessage!),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('No se pudo cargar puntos de venta: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 60,
-        title: const Text(
-          'TUVAL',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-            color: Colors.white,
-          ),
-        ),
-      ),
+      appBar: TuvalAppBar(),
       drawer: const SideMenu(),
       body: user == null
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
+          ? const Center(child: CircularProgressIndicator())
           : ContentBody(user: user),
     );
   }

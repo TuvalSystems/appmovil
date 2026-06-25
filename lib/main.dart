@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'TUVAL',
-      debugShowCheckedModeBanner: !AppEnvironment.isProduction,
+      debugShowCheckedModeBanner: false,
       theme: const AppTheme().theme(),
       home: _buildHome(authStatus),
       routes: AppRouter.getRoutes(),
@@ -53,7 +53,37 @@ class MyApp extends StatelessWidget {
           left: false,
           right: false,
           bottom: true,
-          child: child ?? const SizedBox.shrink(),
+          child: Stack(
+            children: [
+              child ?? const SizedBox.shrink(),
+
+              if (!AppEnvironment.isProduction)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Material(
+                    color: Colors.redAccent,
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Text(
+                          'AMBIENTE ${AppEnvironment.env.toUpperCase()}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         );
       },
     );

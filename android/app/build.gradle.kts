@@ -41,17 +41,17 @@ android {
             dimension = "env"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            resValue("string", "app_name", "Tuval App Dev")
+            resValue("string", "app_name", "Tuval Dev")
         }
         create("qa"){
             dimension = "env"
             applicationIdSuffix = ".qa"
             versionNameSuffix = "-qa"
-            resValue("string", "app_name", "Tuval App Test")
+            resValue("string", "app_name", "Tuval Test")
         }
         create("prod") {
             dimension = "env"
-            resValue("string", "app_name", "Tuval App")
+            resValue("string", "app_name", "Tuval")
         }
     }
 

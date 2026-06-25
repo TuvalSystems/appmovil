@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tuvalapp/config/environment/app_environment.dart';
 import 'package:tuvalapp/config/router/app_router.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:tuvalapp/infrastructure/datasources/point_sales_datasource.dart';
@@ -42,7 +43,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'TUVAL',
-      debugShowCheckedModeBanner: false,
+      debugShowCheckedModeBanner: !AppEnvironment.isProduction,
       theme: const AppTheme().theme(),
       home: _buildHome(authStatus),
       routes: AppRouter.getRoutes(),

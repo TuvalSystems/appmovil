@@ -43,6 +43,12 @@ android {
             versionNameSuffix = "-dev"
             resValue("string", "app_name", "Tuval App Dev")
         }
+        create("qa"){
+            dimension = "env"
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
+            resValue("string", "app_name", "Tuval App Test")
+        }
         create("prod") {
             dimension = "env"
             resValue("string", "app_name", "Tuval App")

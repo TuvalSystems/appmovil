@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tuvalapp/config/environment/app_environment.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -246,10 +247,10 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
       future: _packageInfoFuture,
       builder: (context, snapshot) {
         final packageInfo = snapshot.data;
-
+        final envText = AppEnvironment.env.toUpperCase();
         final versionText = packageInfo == null
-            ? 'Tuval App'
-            : 'v${packageInfo.version}+${packageInfo.buildNumber} - Tuval App';
+            ? 'Tuval App - $envText'
+            : 'v${packageInfo.version}+${packageInfo.buildNumber} - Tuval App - $envText';
 
         return Text(
           versionText,

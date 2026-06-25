@@ -8,7 +8,7 @@ class AppEnvironment {
     switch (env) {
       case 'prod':
         return 'https://api.tuvalsa.com/api';
-      case 'test':
+      case 'qa':
         return 'http://tuvalapi.cosenco.ec/api';
       case 'dev':
       default:
@@ -18,7 +18,7 @@ class AppEnvironment {
 
   static bool get isProduction => env == 'prod';
   static bool get isDevelopment => env == 'dev';
-  static bool get isTesting => env == 'test';
+  static bool get isQa => env == 'qa';
 
   static bool get enableHttpLogs => !isProduction;
 }

@@ -26,9 +26,29 @@ val hasReleaseKeystore =
     !releaseStorePassword.isNullOrBlank()
 
 android {
+
     namespace = "com.tuvalsa.tuvalapp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+
+    // configuracion para dimensinamiento de entornos de app movil 
+    
+    flavorDimensions += "env"
+
+    productFlavors {
+        create("dev") {
+            dimension = "env"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "Tuval App Dev")
+        }
+        create("prod") {
+            dimension = "env"
+            resValue("string", "app_name", "Tuval App")
+        }
+    }
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

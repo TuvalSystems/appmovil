@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:tuvalapp/config/environment/app_environment.dart';
 import 'package:tuvalapp/domain/entities/app_version_info.dart';
 import 'package:tuvalapp/infrastructure/datasources/app_version_datasource.dart';
 
@@ -21,7 +23,10 @@ class AppUpdateResult {
 class AppUpdateService {
   final AppVersionDatasource datasource = AppVersionDatasource();
 
-  Future<AppUpdateResult> checkForUpdate() async {
+  Future<AppUpdateResult?> checkForUpdate() async {
+    if (AppEnvironment.isDevelopment || kDebugMode) {
+      return null;
+    }
     final packageInfo = await PackageInfo.fromPlatform();
 
     final currentBuild = int.tryParse(packageInfo.buildNumber) ?? 0;

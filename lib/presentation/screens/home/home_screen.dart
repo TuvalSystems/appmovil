@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final result = await _appUpdateService.checkForUpdate();
 
-      if (!mounted) return;
+      if (!mounted || result == null) return;
 
       if (result.hasUpdate) {
         _updateDialogShown = true;

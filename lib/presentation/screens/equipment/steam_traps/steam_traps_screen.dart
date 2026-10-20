@@ -13,7 +13,7 @@ class SteamTrapsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => SteamTrapProvider(),
-      child: const _SteamTrapsView(),
+      child: _SteamTrapsView(),
     );
   }
 }
@@ -24,18 +24,18 @@ class _SteamTrapsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
-      drawer: const SideMenu(),
-      appBar: const TuvalAppBar(title: 'Trampas de Vapor'),
+      backgroundColor: context.appColors.bg,
+      drawer: SideMenu(),
+      appBar: TuvalAppBar(title: 'Trampas de Vapor'),
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
           FocusManager.instance.primaryFocus?.unfocus();
         },
-        child: const ScrollConfiguration(
+        child: ScrollConfiguration(
           behavior: _NoStretchScrollBehavior(),
           child: SingleChildScrollView(
-            keyboardDismissBehavior:  ScrollViewKeyboardDismissBehavior.onDrag,
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             physics: ClampingScrollPhysics(),
             padding: EdgeInsets.all(16),
             child: SteamTrapMainCard(),

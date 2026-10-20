@@ -5,7 +5,6 @@ import 'package:tuvalapp/infrastructure/models/menu/app_menu_model.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
 import 'package:tuvalapp/presentation/providers/point_sales_provider.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/side_menu_header.dart';
-import 'package:tuvalapp/presentation/screens/home/widgets/user_initials_avatar.dart';
 import 'package:tuvalapp/presentation/shared/helpers/mobile_menu_mapper.dart';
 
 class SideMenu extends StatelessWidget {
@@ -27,7 +26,7 @@ class SideMenu extends StatelessWidget {
           //SECCION DE NAVEGACIÓN
           Expanded(
             child: menuItems.isEmpty
-                ? const _EmptyMenuMessage()
+                ? _EmptyMenuMessage()
                 : ListView(
                     padding: EdgeInsets.zero,
                     children: menuItems
@@ -39,9 +38,9 @@ class SideMenu extends StatelessWidget {
           ),
 
           // --- BOTÓN DE CIERRE DE SESIÓN ---
-          const Divider(),
-          const _SafeLogout(),
-          const SizedBox(height: 10),
+          Divider(),
+          _SafeLogout(),
+          SizedBox(height: 10),
         ],
       ),
     );
@@ -63,21 +62,21 @@ class SideMenu extends StatelessWidget {
         leading: Icon(
           MobileMenuMapper.resolveIcon(item.icon),
           size: 20,
-          color: isActive ? AppColors.brand : AppColors.muted,
+          color: isActive ? AppColors.brand : context.appColors.muted,
         ),
         title: Text(
           item.label,
           style: TextStyle(
             fontSize: 14,
             fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-            color: isActive ? AppColors.brand : AppColors.muted,
+            color: isActive ? AppColors.brand : context.appColors.muted,
           ),
         ),
         iconColor: AppColors.brand,
         collapsedIconColor: AppColors.brand,
         textColor: AppColors.brand,
         collapsedTextColor: AppColors.brand,
-        childrenPadding: const EdgeInsets.only(left: 20),
+        childrenPadding: EdgeInsets.only(left: 20),
         children: item.children.map((child) {
           final childHasChildren = child.children.isNotEmpty;
 
@@ -152,13 +151,13 @@ class _EmptyMenuMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
         padding: EdgeInsets.all(16),
         child: Text(
           'No hay opciones de menú disponibles.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppColors.muted, fontSize: 13),
+          style: TextStyle(color: context.appColors.muted, fontSize: 13),
         ),
       ),
     );
@@ -173,8 +172,8 @@ class _SafeLogout extends StatelessWidget {
       top: false,
       child: ListTile(
         dense: true,
-        leading: const Icon(Icons.logout),
-        title: const Text(
+        leading: Icon(Icons.logout),
+        title: Text(
           'Cerrar Sesión',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -192,8 +191,6 @@ class _SafeLogout extends StatelessWidget {
   }
 }
 
-
-
 //widget para menu sin submenu
 class _DrawerItem extends StatelessWidget {
   final IconData icon;
@@ -210,13 +207,13 @@ class _DrawerItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppColors.brand : AppColors.muted;
+    final color = isActive ? AppColors.brand : context.appColors.muted;
 
     return ListTile(
       dense: true,
-      visualDensity: const VisualDensity(vertical: -4),
+      visualDensity: VisualDensity(vertical: -4),
       selected: isActive,
-      selectedTileColor: AppColors.brandSoft,
+      selectedTileColor: context.appColors.brandSoft,
       leading: Icon(icon, color: color, size: 20),
       title: Text(
         label,
@@ -247,16 +244,16 @@ class _SubMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppColors.brand : AppColors.muted;
+    final color = isActive ? AppColors.brand : context.appColors.muted;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+      padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
       child: ListTile(
         dense: true,
-        visualDensity: const VisualDensity(vertical: -4),
+        visualDensity: VisualDensity(vertical: -4),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         selected: isActive,
-        selectedTileColor: AppColors.brandSoft,
+        selectedTileColor: context.appColors.brandSoft,
         leading: Icon(icon, color: color, size: 16),
         title: Text(
           label,

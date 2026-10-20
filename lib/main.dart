@@ -45,6 +45,8 @@ class MyApp extends StatelessWidget {
       title: 'TUVAL',
       debugShowCheckedModeBanner: false,
       theme: const AppTheme().theme(),
+      darkTheme: const AppTheme().theme(brightness: Brightness.dark),
+      themeMode: ThemeMode.system,
       home: _buildHome(authStatus),
       routes: AppRouter.getRoutes(),
       builder: (context, child) {

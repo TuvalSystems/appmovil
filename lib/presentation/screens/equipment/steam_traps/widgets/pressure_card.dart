@@ -1,3 +1,4 @@
+import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/presentation/screens/equipment/steam_traps/providers/steam_trap_provider.dart';
@@ -16,37 +17,34 @@ class PressureCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Datos de presión',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xff07142b),
+                    color: context.appColors.text,
                   ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 7,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
-                  color: const Color(0xffeef3f9),
+                  color: context.appColors.pill,
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text(
+                child: Text(
                   'Se usa hfg por tabla PSIG',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xff07142b),
+                    color: context.appColors.text,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18),
           LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth > 430;
@@ -61,7 +59,7 @@ class PressureCard extends StatelessWidget {
                         onChanged: provider.clearGeneratedResult,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: SteamTrapInput(
                         label: 'Presión de retorno',
@@ -69,8 +67,8 @@ class PressureCard extends StatelessWidget {
                         onChanged: provider.clearGeneratedResult,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    const SizedBox(width: 100, child: _UnitBadge()),
+                    SizedBox(width: 12),
+                    SizedBox(width: 100, child: _UnitBadge()),
                   ],
                 );
               }
@@ -81,14 +79,14 @@ class PressureCard extends StatelessWidget {
                     controller: provider.pressureController,
                     onChanged: provider.clearGeneratedResult,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   SteamTrapInput(
                     label: 'Presión de retorno',
                     controller: provider.returnPressureController,
                     onChanged: provider.clearGeneratedResult,
                   ),
-                  const SizedBox(height: 12),
-                  const _UnitBadge(),
+                  SizedBox(height: 12),
+                  _UnitBadge(),
                 ],
               );
             },
@@ -107,27 +105,25 @@ class _UnitBadge extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _Label('Unidad'),
-        const SizedBox(height: 8,),
+        _Label('Unidad'),
+        SizedBox(height: 8),
         Container(
           height: 46,
           alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: context.appColors.card,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: const Color(0xffdce6f2),
-            ),
+            border: Border.all(color: context.appColors.border),
           ),
-          child: const Text(
+          child: Text(
             'PSIG',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: Color(0xff07142b),
+              color: context.appColors.text,
             ),
-            ),
+          ),
         ),
       ],
     );
@@ -137,26 +133,23 @@ class _UnitBadge extends StatelessWidget {
 class _SectionCard extends StatelessWidget {
   final Widget child;
 
-  const _SectionCard({
-    required this.child,
-  });
+  const _SectionCard({required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xfffbfdff),
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xffdce6f2),
-        ),
+        border: Border.all(color: context.appColors.border),
       ),
       child: child,
     );
   }
 }
+
 class _Label extends StatelessWidget {
   final String text;
 
@@ -166,10 +159,10 @@ class _Label extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: Color(0xff344563),
+        color: context.appColors.muted,
       ),
     );
   }

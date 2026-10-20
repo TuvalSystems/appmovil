@@ -1,3 +1,4 @@
+import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
@@ -48,7 +49,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Contraseña actualizada correctamente'),
         backgroundColor: Colors.green,
       ),
@@ -63,23 +64,23 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: BoxConstraints(maxWidth: 420),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.lock_reset_rounded,
                       size: 72,
                       color: Color(0xFFEA580C),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
 
-                    const Text(
+                    Text(
                       'Actualizar contraseña',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -88,15 +89,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
 
-                    const Text(
+                    Text(
                       'Por seguridad debes actualizar tus credenciales antes de continuar.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: context.appColors.muted,
+                      ),
                     ),
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32),
                     TextFormField(
                       controller: _newPasswordController,
                       obscureText: _obscureNewPassword,
@@ -104,8 +108,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       autocorrect: false,
                       decoration: InputDecoration(
                         labelText: 'Nueva contraseña',
-                        prefixIcon: const Icon(Icons.lock),
-                        border: const OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock),
+                        border: OutlineInputBorder(),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureNewPassword
@@ -125,26 +129,24 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         }
 
                         if (value.trim().length < 8) {
-                            return 'La contraseña debe tener al menos 8 caracteres';
+                          return 'La contraseña debe tener al menos 8 caracteres';
                         }
-
-                        
 
                         return null;
                       },
                     ),
 
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28),
 
                     ElevatedButton(
                       onPressed: authProvider.isPosting ? null : _submit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFEA580C),
+                        backgroundColor: Color(0xFFEA580C),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: 16),
                       ),
                       child: authProvider.isPosting
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 22,
                               height: 22,
                               child: CircularProgressIndicator(
@@ -152,20 +154,20 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
+                          : Text(
                               'Actualizar contraseña',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
 
                     TextButton.icon(
                       onPressed: authProvider.isPosting
                           ? null
                           : () => authProvider.logout(),
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Cerrar sesión'),
+                      icon: Icon(Icons.logout),
+                      label: Text('Cerrar sesión'),
                     ),
                   ],
                 ),

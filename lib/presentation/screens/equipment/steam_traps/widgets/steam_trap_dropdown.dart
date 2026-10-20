@@ -1,3 +1,4 @@
+import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class SteamTrapDropdown extends StatelessWidget {
@@ -19,26 +20,24 @@ class SteamTrapDropdown extends StatelessWidget {
     final safeValue = items.contains(value)
         ? value
         : items.isNotEmpty
-            ? items.first
-            : null;
+        ? items.first
+        : null;
 
     final dropdown = Container(
       height: 46,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xffdce6f2),
-        ),
+        border: Border.all(color: context.appColors.border),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           isExpanded: true,
           value: safeValue,
-          icon: const Icon(
+          icon: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: Color(0xff07142b),
+            color: context.appColors.text,
           ),
           items: items.map((item) {
             return DropdownMenuItem<String>(
@@ -46,10 +45,7 @@ class SteamTrapDropdown extends StatelessWidget {
               child: Text(
                 item,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xff07142b),
-                ),
+                style: TextStyle(fontSize: 13, color: context.appColors.text),
               ),
             );
           }).toList(),
@@ -64,11 +60,7 @@ class SteamTrapDropdown extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _Label(label!),
-        const SizedBox(height: 8),
-        dropdown,
-      ],
+      children: [_Label(label!), SizedBox(height: 8), dropdown],
     );
   }
 }
@@ -82,10 +74,10 @@ class _Label extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: Color(0xff344563),
+        color: context.appColors.muted,
       ),
     );
   }

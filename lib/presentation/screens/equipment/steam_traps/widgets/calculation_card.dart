@@ -1,3 +1,4 @@
+import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/presentation/screens/equipment/steam_traps/providers/steam_trap_provider.dart';
@@ -25,13 +26,13 @@ class CalculationCard extends StatelessWidget {
               if (isWide) {
                 return Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Cálculo de carga',
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xff07142b),
+                          color: context.appColors.text,
                         ),
                       ),
                     ),
@@ -42,26 +43,24 @@ class CalculationCard extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Cálculo de carga',
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xff07142b),
+                      color: context.appColors.text,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   _RouteBadge(text: routeText),
                 ],
               );
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
-            child: provider.isHeatingProcess
-                ? const HeatingFields()
-                : const DragFields(),
+            duration: Duration(milliseconds: 180),
+            child: provider.isHeatingProcess ? HeatingFields() : DragFields(),
           ),
         ],
       ),
@@ -77,9 +76,9 @@ class _RouteBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xffeef3f9),
+        color: context.appColors.pill,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -87,7 +86,7 @@ class _RouteBadge extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: Color(0xff07142b),
+          color: context.appColors.text,
         ),
       ),
     );
@@ -103,11 +102,11 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xfffbfdff),
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xffdce6f2)),
+        border: Border.all(color: context.appColors.border),
       ),
       child: child,
     );

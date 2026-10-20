@@ -1,7 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/widgets.dart';
-import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
+import 'package:tuvalapp/presentation/shared/controllers/customer_search_controller.dart';
 import 'package:tuvalapp/infrastructure/datasources/steam_trap_datasource.dart';
 import 'package:tuvalapp/infrastructure/models/steam_traps/steam_trap_customer.dart';
 import 'package:tuvalapp/infrastructure/models/steam_traps/steam_trap_sizing_request.dart';
@@ -11,9 +9,14 @@ import 'package:tuvalapp/presentation/shared/widgets/app_toast.dart';
 
 class SteamTrapProvider extends ChangeNotifier {
   final SteamTrapDatasource steamTrapDataSource = SteamTrapDatasource();
-  final CustomersDatasource customersDatasource = CustomersDatasource();
+  final customerSearch = CustomerSearchController();
 
-  Timer? _customerSearchDebounce;
+  SteamTrapProvider() {
+    customerSearch.addListener(notifyListeners);
+    customerSearch.onCustomerChanged = clearGeneratedResult;
+  }
+
+  SteamTrapCustomer? get selectedCustomer => customerSearch.selectedCustomer;
 
   bool isSending = false;
   bool isCreateQuote = false;
@@ -34,13 +37,6 @@ class SteamTrapProvider extends ChangeNotifier {
   final tiempoController = TextEditingController(text: '30');
   final knownLoadController = TextEditingController(text: '');
   final boilerBhpController = TextEditingController(text: '100');
-  final customerSearchController = TextEditingController();
-
-  bool isSearchingCustomer = false;
-  String? customerSearchMessage;
-
-  SteamTrapCustomer? selectedCustomer;
-  List<SteamTrapCustomer> customerResults = [];
 
   void setProcess(String value) {
     selectedProcess = value;
@@ -60,113 +56,6 @@ class SteamTrapProvider extends ChangeNotifier {
   void clearGeneratedResult() {
     sendMessage = null;
     generatedPdfUrl = null;
-    notifyListeners();
-  }
-
-  void onCustomerSearchChanged(String value) {
-    _customerSearchDebounce?.cancel();
-
-    final query = value.trim();
-
-    selectedCustomer = null;
-    customerResults = [];
-    customerSearchMessage = null;
-    sendMessage = null;
-    generatedPdfUrl = null;
-
-    if (query.isEmpty) {
-      isSearchingCustomer = false;
-      notifyListeners();
-      return;
-    }
-
-    if (query.length < 3) {
-      isSearchingCustomer = false;
-      customerSearchMessage = 'Ingrese al menos 3 caracteres para buscar.';
-      notifyListeners();
-      return;
-    }
-
-    isSearchingCustomer = true;
-    notifyListeners();
-
-    _customerSearchDebounce = Timer(const Duration(milliseconds: 450), () {
-      searchCustomers(query);
-    });
-  }
-
-  Future<void> searchCustomers(String query) async {
-    final cleanQuery = query.trim();
-
-    if (cleanQuery.length < 3) {
-      customerResults = [];
-      customerSearchMessage = 'Ingrese al menos 3 caracteres para buscar.';
-      isSearchingCustomer = false;
-      notifyListeners();
-      return;
-    }
-
-    try {
-      final response = await customersDatasource.searchCustomers(cleanQuery);
-      final data = response['data'];
-
-      if (data is List) {
-        final results = data
-            .whereType<Map>()
-            .map((item) {
-              return SteamTrapCustomer.fromJson(
-                Map<String, dynamic>.from(item),
-              );
-            })
-            .where((customer) {
-              return customer.id > 0 &&
-                  customer.ruc.isNotEmpty &&
-                  customer.razonSocial.isNotEmpty;
-            })
-            .toList();
-
-        customerResults = results;
-      } else {
-        customerResults = [];
-      }
-
-      customerSearchMessage = customerResults.isEmpty
-          ? 'No se encontraron clientes.'
-          : null;
-    } catch (e) {
-      customerResults = [];
-      customerSearchMessage = e.toString().replaceAll('Exception: ', '');
-    } finally {
-      isSearchingCustomer = false;
-      notifyListeners();
-    }
-  }
-
-  void selectCustomer(SteamTrapCustomer customer) {
-    selectedCustomer = customer;
-    customerSearchController.text = customer.shortDisplayName;
-    customerResults = [];
-    customerSearchMessage = null;
-
-    sendMessage = null;
-    generatedPdfUrl = null;
-
-    notifyListeners();
-  }
-
-  void clearSelectedCustomer() {
-    _customerSearchDebounce?.cancel();
-
-    selectedCustomer = null;
-    customerResults = [];
-    customerSearchMessage = null;
-    customerSearchController.clear();
-
-    sendMessage = null;
-    generatedPdfUrl = null;
-
-    isSearchingCustomer = false;
-
     notifyListeners();
   }
 
@@ -478,9 +367,8 @@ class SteamTrapProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    _customerSearchDebounce?.cancel();
-
-    customerSearchController.dispose();
+    customerSearch.removeListener(notifyListeners);
+    customerSearch.dispose();
     pressureController.dispose();
     volumeController.dispose();
     tempIniController.dispose();

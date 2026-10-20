@@ -12,9 +12,7 @@ class SteamTrapInput extends StatelessWidget {
     required this.label,
     required this.controller,
     required this.onChanged,
-    this.keyboardType = const TextInputType.numberWithOptions(
-      decimal: true,
-    ),
+    this.keyboardType = const TextInputType.numberWithOptions(decimal: true),
   });
 
   @override
@@ -25,7 +23,7 @@ class SteamTrapInput extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _Label(label),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         SizedBox(
           height: 46,
           child: TextField(
@@ -42,26 +40,19 @@ class SteamTrapInput extends StatelessWidget {
             decoration: InputDecoration(
               hintText: isTextField ? 'Escriba aquí' : '0.00',
               filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+              fillColor: context.appColors.card,
+              contentPadding: EdgeInsets.symmetric(horizontal: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                  color: Color(0xffdce6f2),
-                ),
+                borderSide: BorderSide(color: context.appColors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                  color: Color(0xffdce6f2),
-                ),
+                borderSide: BorderSide(color: context.appColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(
-                  color: AppColors.brand,
-                  width: 1.4,
-                ),
+                borderSide: BorderSide(color: AppColors.brand, width: 1.4),
               ),
             ),
           ),
@@ -80,10 +71,10 @@ class _Label extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w700,
-        color: Color(0xff344563),
+        color: context.appColors.muted,
       ),
     );
   }

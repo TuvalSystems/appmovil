@@ -13,9 +13,7 @@ class ContentBody extends StatelessWidget {
     final currentUser = user;
 
     if (currentUser == null) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return Center(child: CircularProgressIndicator());
     }
 
     return LayoutBuilder(
@@ -23,22 +21,22 @@ class ContentBody extends StatelessWidget {
         final isWide = constraints.maxWidth > 600;
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _WelcomeCard(user: currentUser),
-              const SizedBox(height: 16),
-            
-              // const Text(
+              SizedBox(height: 16),
+
+              // Text(
               //   'Accesos rápidos',
               //   style: TextStyle(
-              //     color: AppColors.text,
+              //     color: context.appColors.text,
               //     fontSize: 18,
               //     fontWeight: FontWeight.bold,
               //   ),
               // ),
-              // const SizedBox(height: 12),
+              // SizedBox(height: 12),
 
               // Wrap(
               //   spacing: 12,
@@ -59,7 +57,7 @@ class ContentBody extends StatelessWidget {
               //         },
               //       ),
               //     ),
-                  
+
               //   ],
               // ),
             ],
@@ -79,7 +77,7 @@ class _WelcomeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.brand,
         borderRadius: BorderRadius.circular(20),
@@ -87,7 +85,7 @@ class _WelcomeCard extends StatelessWidget {
           BoxShadow(
             color: AppColors.brand.withValues(alpha: 0.22),
             blurRadius: 16,
-            offset: const Offset(0, 8),
+            offset: Offset(0, 8),
           ),
         ],
       ),
@@ -99,22 +97,20 @@ class _WelcomeCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.25),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.home_work_outlined,
               color: Colors.white,
               size: 30,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Bienvenido',
                   style: TextStyle(
                     color: Colors.white70,
@@ -122,24 +118,21 @@ class _WelcomeCard extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   user.fullName,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 21,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
+                SizedBox(height: 6),
+                Text(
                   'Panel principal de herramientas TUVAL.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ],
             ),
@@ -149,7 +142,6 @@ class _WelcomeCard extends StatelessWidget {
     );
   }
 }
-
 
 class _ModuleCard extends StatelessWidget {
   const _ModuleCard({
@@ -174,16 +166,16 @@ class _ModuleCard extends StatelessWidget {
       onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(18),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: context.appColors.card,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.appColors.border),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
@@ -196,47 +188,44 @@ class _ModuleCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: enabled
                     ? AppColors.brand.withValues(alpha: 0.10)
-                    : AppColors.muted.withValues(alpha: 0.10),
+                    : context.appColors.muted.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
                 icon,
-                color: enabled ? AppColors.brand : AppColors.muted,
+                color: enabled ? AppColors.brand : context.appColors.muted,
                 size: 26,
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             Text(
               title,
-              style: const TextStyle(
-                color: AppColors.text,
+              style: TextStyle(
+                color: context.appColors.text,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               subtitle,
-              style: const TextStyle(
-                color: AppColors.muted,
+              style: TextStyle(
+                color: context.appColors.muted,
                 fontSize: 13,
                 height: 1.35,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 9,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
               decoration: BoxDecoration(
-                color: enabled ? AppColors.brand : AppColors.border,
+                color: enabled ? AppColors.brand : context.appColors.border,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 buttonText,
                 style: TextStyle(
-                  color: enabled ? Colors.white : AppColors.muted,
+                  color: enabled ? Colors.white : context.appColors.muted,
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -248,4 +237,3 @@ class _ModuleCard extends StatelessWidget {
     );
   }
 }
-

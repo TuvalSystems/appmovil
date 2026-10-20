@@ -12,7 +12,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      backgroundColor: context.appColors.bg,
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () {
@@ -21,9 +21,9 @@ class LoginScreen extends StatelessWidget {
         child: Center(
           child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.symmetric(horizontal: 30),
+            padding: EdgeInsets.symmetric(horizontal: 30),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
+              constraints: BoxConstraints(maxWidth: 430),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -34,13 +34,13 @@ class LoginScreen extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
 
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
 
-                  const _LoginForm(),
+                  _LoginForm(),
 
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32),
 
-                  const _AppVersionLabel(),
+                  _AppVersionLabel(),
                 ],
               ),
             ),
@@ -103,16 +103,16 @@ class _LoginFormState extends State<_LoginForm> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.appColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 14,
-            offset: const Offset(0, 6),
+            offset: Offset(0, 6),
           ),
         ],
       ),
@@ -122,27 +122,30 @@ class _LoginFormState extends State<_LoginForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(
+              Center(
                 child: Text(
                   'Ingreso',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.text,
+                    color: context.appColors.text,
                   ),
                 ),
               ),
 
-              const SizedBox(height: 6),
+              SizedBox(height: 6),
 
-              const Center(
+              Center(
                 child: Text(
                   'Accede con tus credenciales TUVAL',
-                  style: TextStyle(color: AppColors.muted, fontSize: 13),
+                  style: TextStyle(
+                    color: context.appColors.muted,
+                    fontSize: 13,
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
 
               TextFormField(
                 controller: userController,
@@ -150,8 +153,8 @@ class _LoginFormState extends State<_LoginForm> {
                 autocorrect: false,
                 textInputAction: TextInputAction.next,
                 keyboardType: TextInputType.text,
-                autofillHints: const [AutofillHints.username],
-                decoration: const InputDecoration(
+                autofillHints: [AutofillHints.username],
+                decoration: InputDecoration(
                   labelText: 'Usuario',
                   hintText: 'Ingrese su usuario',
                   prefixIcon: Icon(Icons.person_outline),
@@ -167,21 +170,21 @@ class _LoginFormState extends State<_LoginForm> {
                 },
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
 
               TextFormField(
                 controller: passwordController,
                 enabled: !isPosting,
                 obscureText: _obscurePassword,
                 textInputAction: TextInputAction.done,
-                autofillHints: const [AutofillHints.password],
+                autofillHints: [AutofillHints.password],
                 onFieldSubmitted: (_) {
                   if (!isPosting) _submit();
                 },
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
                   hintText: 'Ingrese su contraseña',
-                  prefixIcon: const Icon(Icons.lock_outline),
+                  prefixIcon: Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     onPressed: isPosting
                         ? null
@@ -208,7 +211,7 @@ class _LoginFormState extends State<_LoginForm> {
                 },
               ),
 
-              const SizedBox(height: 26),
+              SizedBox(height: 26),
               AppActionButton(
                 label: 'Ingresar',
                 loadingLabel: 'Validando',
@@ -254,7 +257,7 @@ class _AppVersionLabelState extends State<_AppVersionLabel> {
 
         return Text(
           versionText,
-          style: const TextStyle(color: AppColors.muted, fontSize: 12),
+          style: TextStyle(color: context.appColors.muted, fontSize: 12),
         );
       },
     );

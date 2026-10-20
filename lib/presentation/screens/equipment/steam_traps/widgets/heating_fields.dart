@@ -14,7 +14,7 @@ class HeatingFields extends StatelessWidget {
     final provider = context.watch<SteamTrapProvider>();
 
     return Column(
-      key: const ValueKey('calentamiento'),
+      key: ValueKey('calentamiento'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SteamTrapDropdown(
@@ -26,7 +26,7 @@ class HeatingFields extends StatelessWidget {
             provider.setFluid(value);
           },
         ),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         LayoutBuilder(
           builder: (context, constraints) {
             final width = constraints.maxWidth;
@@ -75,14 +75,14 @@ class HeatingFields extends StatelessWidget {
             );
           },
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(
           'Cp: ${provider.fmt(provider.cp, 2)} kJ/kg·°C · '
           'Densidad: ${provider.fmt(provider.rho, 0)} kg/m³ · '
           'Masa calculada: ${provider.fmt(provider.massKg, 2)} kg',
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.muted,
+            color: context.appColors.muted,
             height: 1.35,
           ),
         ),

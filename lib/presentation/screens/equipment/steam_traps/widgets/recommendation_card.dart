@@ -317,7 +317,7 @@ class _ActionsBox extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -513,7 +513,7 @@ class _StatusBox extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -631,7 +631,7 @@ class _MetricChip extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -663,7 +663,7 @@ class _MiniBadge extends StatelessWidget {
         style: const TextStyle(
           color: Colors.white,
           fontSize: 10.5,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

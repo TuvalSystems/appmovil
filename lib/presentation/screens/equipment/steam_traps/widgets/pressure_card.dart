@@ -22,7 +22,7 @@ class PressureCard extends StatelessWidget {
                   'Datos de presión',
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: context.appColors.text,
                   ),
                 ),
@@ -37,7 +37,7 @@ class PressureCard extends StatelessWidget {
                   'Se usa hfg por tabla PSIG',
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: context.appColors.text,
                   ),
                 ),
@@ -114,13 +114,13 @@ class _UnitBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.appColors.card,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: context.appColors.border),
+            border: Border.all(color: context.appColors.border, width: 0.7),
           ),
           child: Text(
             'PSIG',
             style: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: context.appColors.text,
             ),
           ),
@@ -143,7 +143,7 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.appColors.border),
+        border: Border.all(color: context.appColors.border, width: 0.7),
       ),
       child: child,
     );
@@ -161,7 +161,7 @@ class _Label extends StatelessWidget {
       text,
       style: TextStyle(
         fontSize: 12,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         color: context.appColors.muted,
       ),
     );

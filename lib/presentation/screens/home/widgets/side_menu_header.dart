@@ -24,9 +24,9 @@ class SideMenuHeader extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(16, 42, 16, 20),
       decoration: BoxDecoration(
-        color: AppColors.brand,
+        color: context.appColors.card,
         border: Border(
-          bottom: BorderSide(color: context.appColors.card, width: 0.5),
+          bottom: BorderSide(color: context.appColors.border, width: 0.6),
         ),
       ),
       child: Column(
@@ -35,14 +35,14 @@ class SideMenuHeader extends StatelessWidget {
           UserInitialsAvatar(
             name: fullName,
             radius: 30,
-            backgroundColor: context.appColors.card,
+            backgroundColor: context.appColors.brandSoft,
             textColor: AppColors.brand,
           ),
           SizedBox(height: 12),
           Text(
             fullName,
             style: TextStyle(
-              color: AppColors.onBrand,
+              color: context.appColors.text,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
@@ -66,7 +66,7 @@ class SideMenuHeader extends StatelessWidget {
   void _showPointSaleSelector(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: context.appColors.card,
+      backgroundColor: context.appColors.brandSoft,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
@@ -98,7 +98,7 @@ class SideMenuHeader extends StatelessWidget {
                         style: TextStyle(
                           color: context.appColors.text,
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -145,7 +145,7 @@ class SideMenuHeader extends StatelessWidget {
                                   color: context.appColors.text,
                                   fontSize: 14,
                                   fontWeight: isSelected
-                                      ? FontWeight.w800
+                                      ? FontWeight.w600
                                       : FontWeight.w500,
                                 ),
                               ),
@@ -200,7 +200,7 @@ class _PointSalesHeaderSelector extends StatelessWidget {
     final subtitle = pvCode.isEmpty ? 'Agencia actual ' : 'Código:$pvCode';
 
     return Material(
-      color: Colors.white.withValues(alpha: 0.14),
+      color: context.appColors.pill,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -212,7 +212,7 @@ class _PointSalesHeaderSelector extends StatelessWidget {
             children: [
               Icon(
                 Icons.storefront_outlined,
-                color: AppColors.onBrand,
+                color: context.appColors.text,
                 size: 18,
               ),
               SizedBox(width: 8),
@@ -225,9 +225,9 @@ class _PointSalesHeaderSelector extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppColors.onBrand,
+                        color: context.appColors.text,
                         fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     SizedBox(height: 2),
@@ -236,7 +236,7 @@ class _PointSalesHeaderSelector extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppColors.onBrand.withValues(alpha: 0.78),
+                        color: context.appColors.muted,
                         fontSize: 11,
                         fontWeight: FontWeight.w400,
                       ),
@@ -250,13 +250,13 @@ class _PointSalesHeaderSelector extends StatelessWidget {
                   height: 14,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.onBrand,
+                    color: context.appColors.text,
                   ),
                 )
               else if (canChange)
                 Icon(
                   Icons.keyboard_arrow_down,
-                  color: AppColors.onBrand,
+                  color: context.appColors.text,
                   size: 20,
                 ),
             ],

@@ -29,7 +29,7 @@ class SteamTrapDropdown extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appColors.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.appColors.border),
+        border: Border.all(color: context.appColors.border, width: 0.7),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -76,7 +76,7 @@ class _Label extends StatelessWidget {
       text,
       style: TextStyle(
         fontSize: 12,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         color: context.appColors.muted,
       ),
     );

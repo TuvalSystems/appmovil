@@ -106,15 +106,8 @@ class _LoginFormState extends State<_LoginForm> {
       padding: EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: context.appColors.card,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: context.appColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: Offset(0, 6),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: context.appColors.border, width: 0.7),
       ),
       child: Form(
         key: _formKey,
@@ -127,7 +120,7 @@ class _LoginFormState extends State<_LoginForm> {
                   'Ingreso',
                   style: TextStyle(
                     fontSize: 22,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: context.appColors.text,
                   ),
                 ),

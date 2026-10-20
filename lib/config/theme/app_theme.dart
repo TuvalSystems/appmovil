@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color bg = Color(0xFFF8FAFC);
+  static const Color bg = Color(0xFFF7F8FA);
   static const Color card = Color(0xFFFFFFFF);
 
-  static const Color text = Color(0xFF0F172A);
-  static const Color muted = Color(0xFF64748B);
+  static const Color text = Color(0xFF20242C);
+  static const Color muted = Color(0xFF727985);
 
-  static const Color border = Color(0xFFE2E8F0);
+  static const Color border = Color(0xFFE3E5E9);
 
   static const Color brand = Color(0xFFEA580C);
   static const Color brandDark = Color(0xFFC2410C);
-  static const Color brandSoft = Color(0xFFFFEDD5);
+  static const Color brandSoft = Color(0xFFFFF2E9);
 
   static const Color onBrand = Colors.white;
 
-  static const Color dark = Color(0xFF0B1220);
-  static const Color pill = Color(0xFFF1F5F9);
+  static const Color dark = Color(0xFF111315);
+  static const Color pill = Color(0xFFF0F1F3);
 
   static const Color success = Color(0xFF16A34A);
   static const Color warning = Color(0xFFF59E0B);
@@ -29,13 +29,13 @@ class AppPalette {
   const AppPalette(this.brightness);
 
   bool get isDark => brightness == Brightness.dark;
-  Color get bg => isDark ? const Color(0xFF0B1220) : AppColors.bg;
-  Color get card => isDark ? const Color(0xFF151F30) : AppColors.card;
-  Color get text => isDark ? const Color(0xFFF1F5F9) : AppColors.text;
-  Color get muted => isDark ? const Color(0xFFA6B5CA) : AppColors.muted;
-  Color get border => isDark ? const Color(0xFF334155) : AppColors.border;
-  Color get brandSoft => isDark ? const Color(0xFF482610) : AppColors.brandSoft;
-  Color get pill => isDark ? const Color(0xFF243247) : AppColors.pill;
+  Color get bg => isDark ? const Color(0xFF111315) : AppColors.bg;
+  Color get card => isDark ? const Color(0xFF1A1D21) : AppColors.card;
+  Color get text => isDark ? const Color(0xFFEEF0F3) : AppColors.text;
+  Color get muted => isDark ? const Color(0xFFA4ABB5) : AppColors.muted;
+  Color get border => isDark ? const Color(0xFF30353C) : AppColors.border;
+  Color get brandSoft => isDark ? const Color(0xFF32251D) : AppColors.brandSoft;
+  Color get pill => isDark ? const Color(0xFF23272D) : AppColors.pill;
   Color get successSoft =>
       isDark ? const Color(0xFF14372C) : const Color(0xFFEEF7F0);
   Color get success =>
@@ -61,6 +61,12 @@ class AppTheme {
           secondary: AppColors.brandDark,
           surface: colors.card,
           onSurface: colors.text,
+          onSurfaceVariant: colors.muted,
+          surfaceContainerLow: colors.bg,
+          surfaceContainerHighest: colors.pill,
+          secondaryContainer: colors.brandSoft,
+          onSecondaryContainer: colors.text,
+          outlineVariant: colors.border,
           outline: colors.border,
           error: AppColors.danger,
         );
@@ -74,24 +80,56 @@ class AppTheme {
 
     return baseTheme.copyWith(
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.brand,
+        backgroundColor: colors.card,
+        foregroundColor: colors.text,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        shape: Border(bottom: BorderSide(color: colors.border, width: 0.6)),
         elevation: 0,
         centerTitle: false,
-        iconTheme: IconThemeData(color: AppColors.onBrand),
+        iconTheme: IconThemeData(color: colors.text),
         titleTextStyle: TextStyle(
-          color: AppColors.onBrand,
-          fontSize: 18,
+          color: colors.text,
+          fontSize: 17,
           fontWeight: FontWeight.w600,
         ),
       ),
 
+      iconTheme: IconThemeData(color: colors.muted, size: 21),
+      dialogTheme: DialogThemeData(
+        backgroundColor: colors.card,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: colors.border, width: 0.7),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colors.card,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          side: BorderSide(color: colors.border, width: 0.7),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: colors.card,
+        surfaceTintColor: Colors.transparent,
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: colors.border, width: 0.7),
+        ),
+      ),
       drawerTheme: DrawerThemeData(
         backgroundColor: colors.card,
         surfaceTintColor: Colors.transparent,
       ),
 
       listTileTheme: ListTileThemeData(
-        iconColor: AppColors.brand,
+        iconColor: colors.muted,
         textColor: colors.text,
         selectedColor: AppColors.brand,
         selectedTileColor: colors.brandSoft,
@@ -104,13 +142,13 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: colors.border),
+          side: BorderSide(color: colors.border, width: 0.7),
         ),
       ),
 
       dividerTheme: DividerThemeData(
         color: colors.border,
-        thickness: 1,
+        thickness: 0.6,
         space: 1,
       ),
 
@@ -122,15 +160,15 @@ class AppTheme {
         labelStyle: TextStyle(color: colors.muted),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colors.border),
+          borderSide: BorderSide(color: colors.border, width: 0.7),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: colors.border),
+          borderSide: BorderSide(color: colors.border, width: 0.7),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.brand, width: 2),
+          borderSide: BorderSide(color: AppColors.brand, width: 1.2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -138,7 +176,7 @@ class AppTheme {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.danger, width: 2),
+          borderSide: BorderSide(color: AppColors.danger, width: 1.2),
         ),
       ),
 
@@ -161,7 +199,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.brand,
-          side: BorderSide(color: AppColors.brand),
+          side: BorderSide(color: colors.border, width: 0.7),
           minimumSize: Size(double.infinity, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

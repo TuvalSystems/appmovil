@@ -31,7 +31,7 @@ class CalculationCard extends StatelessWidget {
                         'Cálculo de carga',
                         style: TextStyle(
                           fontSize: 17,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: context.appColors.text,
                         ),
                       ),
@@ -47,7 +47,7 @@ class CalculationCard extends StatelessWidget {
                     'Cálculo de carga',
                     style: TextStyle(
                       fontSize: 17,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: context.appColors.text,
                     ),
                   ),
@@ -85,7 +85,7 @@ class _RouteBadge extends StatelessWidget {
         text,
         style: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: context.appColors.text,
         ),
       ),
@@ -106,7 +106,7 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.appColors.border),
+        border: Border.all(color: context.appColors.border, width: 0.7),
       ),
       child: child,
     );

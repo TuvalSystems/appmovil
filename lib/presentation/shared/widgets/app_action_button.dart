@@ -36,17 +36,10 @@ class AppActionButton extends StatelessWidget {
     );
 
     if (!fullWidth) {
-      return SizedBox(
-        height: 44,
-        child: button,
-      );
+      return SizedBox(height: 48, child: button);
     }
 
-    return SizedBox(
-      width: double.infinity,
-      height: 44,
-      child: button,
-    );
+    return SizedBox(width: double.infinity, height: 48, child: button);
   }
 
   Widget _buildButton(BuildContext context) {
@@ -102,12 +95,7 @@ class AppActionButton extends StatelessWidget {
 
         if (isLoading || icon != null) const SizedBox(width: 8),
 
-        Flexible(
-          child: Text(
-            text,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        Flexible(child: Text(text, overflow: TextOverflow.ellipsis)),
       ],
     );
   }
@@ -118,14 +106,12 @@ class AppActionButton extends StatelessWidget {
         const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       shape: WidgetStateProperty.all(
-        RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       textStyle: WidgetStateProperty.all(
-        Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+        Theme.of(
+          context,
+        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }

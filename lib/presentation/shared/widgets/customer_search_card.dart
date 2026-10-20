@@ -27,7 +27,7 @@ class CustomerSearchCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.appColors.border),
+        border: Border.all(color: context.appColors.border, width: 0.7),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +36,7 @@ class CustomerSearchCard extends StatelessWidget {
             'Cliente',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               color: context.appColors.text,
             ),
           ),
@@ -67,15 +67,21 @@ class CustomerSearchCard extends StatelessWidget {
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: context.appColors.border),
+                borderSide: BorderSide(
+                  color: context.appColors.border,
+                  width: 0.7,
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: context.appColors.border),
+                borderSide: BorderSide(
+                  color: context.appColors.border,
+                  width: 0.7,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppColors.brand, width: 1.4),
+                borderSide: BorderSide(color: AppColors.brand, width: 1.2),
               ),
             ),
           ),
@@ -198,7 +204,7 @@ class _CustomerResultItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: context.appColors.text,
                     ),
                   ),
@@ -249,7 +255,7 @@ class _SelectedCustomerBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appColors.successSoft,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.appColors.border),
+        border: Border.all(color: context.appColors.border, width: 0.7),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +270,7 @@ class _SelectedCustomerBox extends StatelessWidget {
                   'Cliente seleccionado',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: context.appColors.success,
                   ),
                 ),
@@ -272,7 +278,7 @@ class _SelectedCustomerBox extends StatelessWidget {
                 Text(
                   customer.razonSocial,
                   style: TextStyle(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: context.appColors.text,
                   ),
                 ),

@@ -22,14 +22,7 @@ class SteamTrapMainCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.appColors.card,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.appColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: context.appColors.border, width: 0.7),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +31,7 @@ class SteamTrapMainCard extends StatelessWidget {
             'Trampas de vapor (selector rápido)',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               color: context.appColors.text,
             ),
           ),
@@ -53,7 +46,7 @@ class SteamTrapMainCard extends StatelessWidget {
           Text(
             'Proceso / aplicación',
             style: TextStyle(
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               fontSize: 13,
               color: context.appColors.muted,
             ),

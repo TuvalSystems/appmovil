@@ -44,15 +44,21 @@ class SteamTrapInput extends StatelessWidget {
               contentPadding: EdgeInsets.symmetric(horizontal: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: context.appColors.border),
+                borderSide: BorderSide(
+                  color: context.appColors.border,
+                  width: 0.7,
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: context.appColors.border),
+                borderSide: BorderSide(
+                  color: context.appColors.border,
+                  width: 0.7,
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide(color: AppColors.brand, width: 1.4),
+                borderSide: BorderSide(color: AppColors.brand, width: 1.2),
               ),
             ),
           ),
@@ -73,7 +79,7 @@ class _Label extends StatelessWidget {
       text,
       style: TextStyle(
         fontSize: 12,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w600,
         color: context.appColors.muted,
       ),
     );

@@ -22,22 +22,22 @@ class CurrentPointSaleBadge extends StatelessWidget {
 
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.of(context).size.width * 036,
+        maxWidth: MediaQuery.of(context).size.width * 0.36,
       ),
       child: Container(
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.16),
+          color: context.appColors.pill,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+          border: Border.all(color: context.appColors.border, width: 0.6),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.storefront_outlined,
-              color: AppColors.onBrand,
+              color: context.appColors.muted,
               size: 14,
             ),
             const SizedBox(width: 6),
@@ -46,10 +46,10 @@ class CurrentPointSaleBadge extends StatelessWidget {
                 text,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.onBrand,
+                style: TextStyle(
+                  color: context.appColors.muted,
                   fontSize: 10.5,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

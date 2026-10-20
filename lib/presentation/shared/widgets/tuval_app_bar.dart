@@ -22,16 +22,7 @@ class TuvalAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       toolbarHeight: 60,
-      title: Text(
-        title,
-        
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          // letterSpacing: 1.1,
-          color: Colors.white,
-        ),
-      ),
+      title: Text(title),
       actions: appBarActions.isEmpty ? null : appBarActions,
     );
   }

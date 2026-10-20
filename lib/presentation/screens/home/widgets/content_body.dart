@@ -77,17 +77,11 @@ class _WelcomeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(18),
+      padding: EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppColors.brand,
+        color: context.appColors.card,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.brand.withValues(alpha: 0.22),
-            blurRadius: 16,
-            offset: Offset(0, 8),
-          ),
-        ],
+        border: Border.all(color: context.appColors.border, width: 0.7),
       ),
       child: Row(
         children: [
@@ -95,13 +89,13 @@ class _WelcomeCard extends StatelessWidget {
             width: 54,
             height: 54,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: context.appColors.brandSoft,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+              border: Border.all(color: context.appColors.brandSoft),
             ),
             child: Icon(
               Icons.home_work_outlined,
-              color: Colors.white,
+              color: AppColors.brand,
               size: 30,
             ),
           ),
@@ -113,7 +107,7 @@ class _WelcomeCard extends StatelessWidget {
                 Text(
                   'Bienvenido',
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: context.appColors.muted,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -124,15 +118,18 @@ class _WelcomeCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800,
+                    color: context.appColors.text,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: 6),
                 Text(
                   'Panel principal de herramientas TUVAL.',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                  style: TextStyle(
+                    color: context.appColors.muted,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),

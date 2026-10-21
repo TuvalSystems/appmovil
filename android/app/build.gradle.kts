@@ -71,6 +71,15 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Keep single-architecture APKs free of native libraries from other ABIs.
+        if (providers.gradleProperty("target-platform").orNull == "android-arm64" &&
+            providers.gradleProperty("split-per-abi").orNull != "true") {
+            ndk {
+                abiFilters.clear()
+                abiFilters += "arm64-v8a"
+            }
+        }
     }
 
     signingConfigs {

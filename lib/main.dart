@@ -1,3 +1,4 @@
+import 'package:tuvalapp/infrastructure/services/biometric_auth_service.dart';
 import 'package:dio/dio.dart';
 import 'package:tuvalapp/config/http/dio_client.dart';
 import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
@@ -27,6 +28,7 @@ void main() {
     MultiProvider(
       providers: [
         Provider<KeyValueStorageService>.value(value: keyValueStorageService),
+        Provider<BiometricAuthService>(create: (_) => BiometricAuthService()),
         Provider<Dio>(
           create: (context) =>
               DioClient.create(storage: context.read<KeyValueStorageService>()),
@@ -60,6 +62,7 @@ void main() {
           create: (context) => AuthProvider(
             keyValueStorageService: context.read<KeyValueStorageService>(),
             sanctumDatasource: context.read<SanctumDatasource>(),
+            biometricAuthService: context.read<BiometricAuthService>(),
           ),
         ),
         ChangeNotifierProvider(

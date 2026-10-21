@@ -101,6 +101,16 @@ class _LoginFormState extends State<_LoginForm> {
       (provider) => provider.isPosting,
     );
 
+    final biometricEnabled = context.select<AuthProvider, bool>(
+      (p) => p.biometricEnabled,
+    );
+    final canUseBiometrics = context.select<AuthProvider, bool>(
+      (p) => p.canLoginWithBiometrics,
+    );
+    final errorMessage = context.select<AuthProvider, String?>(
+      (p) => p.errorMessage,
+    );
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(24),
@@ -213,6 +223,31 @@ class _LoginFormState extends State<_LoginForm> {
                 variant: AppActionButtonType.primary,
                 onPressed: isPosting ? null : _submit,
               ),
+              if (biometricEnabled) ...[
+                const SizedBox(height: 12),
+                Center(
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.fingerprint),
+                    label: const Text('Ingresar con biometría'),
+                    onPressed: isPosting || !canUseBiometrics
+                        ? null
+                        : () => context
+                              .read<AuthProvider>()
+                              .loginWithBiometrics(),
+                  ),
+                ),
+                if (!canUseBiometrics)
+                  const Text(
+                    'La biometría no está disponible. Ingrese con sus credenciales.',
+                  ),
+              ],
+              if (errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  errorMessage,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
             ],
           ),
         ),

@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Use la biometría para desbloquear su sesión de TUVAL.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>La cámara se utiliza para leer códigos QR de las guías de remisión.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>

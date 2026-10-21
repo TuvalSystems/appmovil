@@ -1,3 +1,4 @@
+import 'package:tuvalapp/presentation/screens/auth/widgets/biometric_settings_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
@@ -39,6 +40,7 @@ class SideMenu extends StatelessWidget {
 
           // --- BOTÓN DE CIERRE DE SESIÓN ---
           Divider(),
+          const BiometricSettingsTile(),
           _SafeLogout(),
           SizedBox(height: 10),
         ],

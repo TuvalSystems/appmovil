@@ -1,3 +1,5 @@
+import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
+import 'package:tuvalapp/infrastructure/datasources/steam_trap_datasource.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
@@ -12,7 +14,10 @@ class SteamTrapsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => SteamTrapProvider(),
+      create: (context) => SteamTrapProvider(
+        steamTrapDataSource: context.read<SteamTrapDatasource>(),
+        customersDatasource: context.read<CustomersDatasource>(),
+      ),
       child: _SteamTrapsView(),
     );
   }

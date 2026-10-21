@@ -9,6 +9,10 @@ import 'package:tuvalapp/config/http/endpoints/inventory_endpoints.dart';
 import 'package:tuvalapp/infrastructure/models/inventory/delivery_note.dart';
 
 class DeliveryNotesDatasource {
+  final Dio _dio;
+
+  DeliveryNotesDatasource({Dio? dio}) : _dio = dio ?? DioClient.instance;
+
   Future<List<DeliveryNoteOption>> types() async {
     final response = await _get(InventoryEndpoints.deliveryNoteTypes);
     return (response['data'] as List)
@@ -56,7 +60,7 @@ class DeliveryNotesDatasource {
 
   Future<DeliveryNote> resolveQr(String code) async {
     final response = await ApiHandler.run(
-      () => DioClient.instance.post(
+      () => _dio.post(
         '${InventoryEndpoints.deliveryNotes}/resolver-qr',
         data: {'codigo': code.trim()},
         options: Options(extra: {'requiresAuth': true}),
@@ -68,6 +72,7 @@ class DeliveryNotesDatasource {
     }
     return DeliveryNote.fromJson({...data, 'id': data['guia_id']});
   }
+
   String _guidePath(DeliveryNote guide) =>
       '${InventoryEndpoints.deliveryNotes}/${guide.type}/${guide.id}';
 
@@ -81,18 +86,27 @@ class DeliveryNotesDatasource {
   Future<DeliveryNoteFiles> saveSignature(
     DeliveryNote guide,
     Uint8List bytes, {
-    String? signer,
-  }) => _upload(
-    '${_guidePath(guide)}/firma',
-    FormData.fromMap({
-      'firma': MultipartFile.fromBytes(
-        bytes,
-        filename: 'firma-${guide.id}.png',
-        contentType: MediaType('image', 'png'),
-      ),
-      'nombre_firmante': ?signer,
-    }),
-  );
+    required String signer,
+    required String identification,
+  }) {
+    if (signer.trim().isEmpty || identification.trim().isEmpty) {
+      throw ArgumentError(
+        'El nombre y el número de identificación son obligatorios.',
+      );
+    }
+    return _upload(
+      '${_guidePath(guide)}/firma',
+      FormData.fromMap({
+        'firma': MultipartFile.fromBytes(
+          bytes,
+          filename: 'firma-${guide.id}.png',
+          contentType: MediaType('image', 'png'),
+        ),
+        'nombre_firmante': signer.trim(),
+        'identificacion_firmante': identification.trim(),
+      }),
+    );
+  }
 
   Future<DeliveryNoteFiles> saveDocuments(
     DeliveryNote guide,
@@ -114,7 +128,7 @@ class DeliveryNotesDatasource {
 
   Future<DeliveryNoteFiles> _upload(String path, FormData data) async {
     final response = await ApiHandler.run(
-      () => DioClient.instance.post(
+      () => _dio.post(
         path,
         data: data,
         options: Options(
@@ -130,7 +144,7 @@ class DeliveryNotesDatasource {
 
   Future<Uint8List> download(DeliveryNote guide, int mediaId) async {
     try {
-      final response = await DioClient.instance.get<List<int>>(
+      final response = await _dio.get<List<int>>(
         '${_guidePath(guide)}/archivos/$mediaId',
         options: Options(
           responseType: ResponseType.bytes,
@@ -150,7 +164,7 @@ class DeliveryNotesDatasource {
     String path, [
     Map<String, dynamic>? query,
   ]) => ApiHandler.run(
-    () => DioClient.instance.get(
+    () => _dio.get(
       path,
       queryParameters: query,
       options: Options(extra: {'requiresAuth': true}),

@@ -4,10 +4,10 @@ import 'package:tuvalapp/infrastructure/services/key_value_storage_service.dart'
 
 class DioClient {
   DioClient._();
-  static final KeyValueStorageService _storage = KeyValueStorageService();
-  static final Dio instance = _createDio();
+  static final Dio instance = create();
 
-  static Dio _createDio() {
+  static Dio create({KeyValueStorageService? storage}) {
+    final tokenStorage = storage ?? KeyValueStorageService();
     final dio = Dio(
       BaseOptions(
         baseUrl: AppEnvironment.apiBaseUrl,
@@ -27,7 +27,7 @@ class DioClient {
           final requiresAuth = options.extra['requiresAuth'] as bool? ?? true;
 
           if (requiresAuth) {
-            final token = await _storage.getKeyValue<String>('auth_token');
+            final token = await tokenStorage.getKeyValue<String>('auth_token');
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] = 'Bearer $token';
             }

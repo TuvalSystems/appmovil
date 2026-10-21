@@ -14,7 +14,7 @@ enum AuthStatus {
 
 class AuthProvider extends ChangeNotifier {
   final KeyValueStorageService keyValueStorageService;
-  final SanctumDatasource sanctumDatasource = SanctumDatasource();
+  final SanctumDatasource sanctumDatasource;
 
   AuthStatus authStatus = AuthStatus.checking;
   User? user;
@@ -22,7 +22,10 @@ class AuthProvider extends ChangeNotifier {
   bool isPosting = false;
   String? errorMessage;
 
-  AuthProvider({required this.keyValueStorageService}) {
+  AuthProvider({
+    required this.keyValueStorageService,
+    SanctumDatasource? sanctumDatasource,
+  }) : sanctumDatasource = sanctumDatasource ?? SanctumDatasource() {
     checkAuthStatus();
   }
 

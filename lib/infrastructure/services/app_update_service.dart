@@ -21,7 +21,10 @@ class AppUpdateResult {
 }
 
 class AppUpdateService {
-  final AppVersionDatasource datasource = AppVersionDatasource();
+  final AppVersionDatasource datasource;
+
+  AppUpdateService({AppVersionDatasource? datasource})
+    : datasource = datasource ?? AppVersionDatasource();
 
   Future<AppUpdateResult?> checkForUpdate() async {
     if (AppEnvironment.isDevelopment || kDebugMode) {

@@ -1,3 +1,4 @@
+import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
 import 'package:tuvalapp/presentation/shared/controllers/customer_search_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tuvalapp/infrastructure/datasources/delivery_notes_datasource.dart';
@@ -5,12 +6,17 @@ import 'package:tuvalapp/infrastructure/models/inventory/delivery_note.dart';
 
 class DeliveryNotesProvider extends ChangeNotifier {
   final DeliveryNotesDatasource datasource;
-  DeliveryNotesProvider({DeliveryNotesDatasource? datasource})
-    : datasource = datasource ?? DeliveryNotesDatasource() {
+  DeliveryNotesProvider({
+    DeliveryNotesDatasource? datasource,
+    CustomersDatasource? customersDatasource,
+  }) : datasource = datasource ?? DeliveryNotesDatasource(),
+       customerSearch = CustomerSearchController(
+         datasource: customersDatasource,
+       ) {
     customerSearch.onCustomerChanged = _onCustomerChanged;
   }
 
-  final customerSearch = CustomerSearchController();
+  final CustomerSearchController customerSearch;
 
   void _onCustomerChanged() {
     final selected = customerSearch.selectedCustomer;

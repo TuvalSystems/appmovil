@@ -1,3 +1,4 @@
+import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
 import 'package:tuvalapp/presentation/screens/inventory/delivery_note/delivery_note_files_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:tuvalapp/infrastructure/datasources/delivery_notes_datasource.dart';
@@ -14,7 +15,10 @@ class DeliveryNotesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider(
-    create: (_) => DeliveryNotesProvider(),
+    create: (context) => DeliveryNotesProvider(
+      datasource: context.read<DeliveryNotesDatasource>(),
+      customersDatasource: context.read<CustomersDatasource>(),
+    ),
     child: const _DeliveryNotesView(),
   );
 }
@@ -70,7 +74,7 @@ class _DeliveryNotesViewState extends State<_DeliveryNotesView> {
         MaterialPageRoute(builder: (_) => const DeliveryNoteQrScreen()),
       );
       if (!mounted || value == null) return;
-      final datasource = DeliveryNotesDatasource();
+      final datasource = context.read<DeliveryNotesProvider>().datasource;
       final guide = await datasource.resolveQr(value);
       if (!mounted) return;
       await Navigator.of(context).push<void>(
@@ -84,14 +88,15 @@ class _DeliveryNotesViewState extends State<_DeliveryNotesView> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) setState(() => _resolvingQr = false);
     }
   }
+
   @override
   void dispose() {
     _points?.removeListener(_syncPointSale);

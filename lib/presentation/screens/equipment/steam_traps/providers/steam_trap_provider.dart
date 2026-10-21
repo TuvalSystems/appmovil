@@ -1,3 +1,4 @@
+import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tuvalapp/presentation/shared/controllers/customer_search_controller.dart';
 import 'package:tuvalapp/infrastructure/datasources/steam_trap_datasource.dart';
@@ -8,10 +9,16 @@ import 'package:tuvalapp/presentation/screens/equipment/steam_traps/helpers/stea
 import 'package:tuvalapp/presentation/shared/widgets/app_toast.dart';
 
 class SteamTrapProvider extends ChangeNotifier {
-  final SteamTrapDatasource steamTrapDataSource = SteamTrapDatasource();
-  final customerSearch = CustomerSearchController();
+  final SteamTrapDatasource steamTrapDataSource;
+  final CustomerSearchController customerSearch;
 
-  SteamTrapProvider() {
+  SteamTrapProvider({
+    SteamTrapDatasource? steamTrapDataSource,
+    CustomersDatasource? customersDatasource,
+  }) : steamTrapDataSource = steamTrapDataSource ?? SteamTrapDatasource(),
+       customerSearch = CustomerSearchController(
+         datasource: customersDatasource,
+       ) {
     customerSearch.addListener(notifyListeners);
     customerSearch.onCustomerChanged = clearGeneratedResult;
   }
@@ -257,12 +264,8 @@ class SteamTrapProvider extends ChangeNotifier {
 
       final response = await steamTrapDataSource.generateSizingPdf(request);
 
-      final data = response['data'];
-      final pdfUrl = data is Map ? data['pdfUrl']?.toString() : null;
-
-      generatedPdfUrl = pdfUrl;
-      sendMessage =
-          response['message']?.toString() ?? 'PDF generado correctamente.';
+      generatedPdfUrl = response.pdfUrl;
+      sendMessage = response.message;
       sendMessageType = AppToastType.success;
     } catch (e) {
       sendMessage = e.toString().replaceAll('Exception: ', '');
@@ -308,9 +311,7 @@ class SteamTrapProvider extends ChangeNotifier {
 
       final response = await steamTrapDataSource.createDraftQuote(request);
 
-      sendMessage =
-          response['message']?.toString() ??
-          'Cotización borrador creada correctamente.';
+      sendMessage = response.message;
       sendMessageType = AppToastType.success;
     } catch (e) {
       sendMessage = e.toString().replaceAll('Exception: ', '');

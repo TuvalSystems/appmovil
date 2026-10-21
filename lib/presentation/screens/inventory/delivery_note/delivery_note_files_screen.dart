@@ -1,11 +1,15 @@
+import 'package:tuvalapp/presentation/shared/widgets/app_toast.dart';
+import 'package:tuvalapp/presentation/shared/widgets/tuval_app_bar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/delivery_note_files_provider.dart';
 import 'package:tuvalapp/infrastructure/datasources/delivery_notes_datasource.dart';
 import 'package:tuvalapp/infrastructure/models/inventory/delivery_note.dart';
 import 'package:tuvalapp/infrastructure/models/inventory/delivery_note_files.dart';
-import 'package:tuvalapp/presentation/screens/inventory/delivery_note/widgets/signature_pad.dart';
+import 'package:tuvalapp/presentation/screens/inventory/delivery_note/widgets/guide_signature_dialog.dart';
 
-class DeliveryNoteFilesScreen extends StatefulWidget {
+class DeliveryNoteFilesScreen extends StatelessWidget {
   final DeliveryNote guide;
   final bool openSignature;
   final DeliveryNotesDatasource datasource;
@@ -16,48 +20,49 @@ class DeliveryNoteFilesScreen extends StatefulWidget {
     this.openSignature = false,
   });
   @override
-  State<DeliveryNoteFilesScreen> createState() =>
-      _DeliveryNoteFilesScreenState();
+  Widget build(BuildContext context) => ChangeNotifierProvider(
+    create: (_) =>
+        DeliveryNoteFilesProvider(guide: guide, datasource: datasource),
+    child: _DeliveryNoteFilesView(guide: guide, openSignature: openSignature),
+  );
 }
 
-class _DeliveryNoteFilesScreenState extends State<DeliveryNoteFilesScreen> {
-  DeliveryNoteFiles _files = const DeliveryNoteFiles();
-  List<PendingDeliveryNoteFile> _pending = [];
-  bool _loading = true;
-  bool _busy = false;
-  String? _error;
+class _DeliveryNoteFilesView extends StatefulWidget {
+  final DeliveryNote guide;
+  final bool openSignature;
+  const _DeliveryNoteFilesView({
+    required this.guide,
+    required this.openSignature,
+  });
+
+  @override
+  State<_DeliveryNoteFilesView> createState() => _DeliveryNoteFilesViewState();
+}
+
+class _DeliveryNoteFilesViewState extends State<_DeliveryNoteFilesView> {
+  DeliveryNoteFilesProvider get _state =>
+      context.read<DeliveryNoteFilesProvider>();
+  bool _opening = false;
+  bool get _busy => _state.busy || _opening;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _load();
-      if (mounted && widget.openSignature && _error == null) {
+      if (!mounted) return;
+      await _state.load();
+      if (mounted && widget.openSignature && _state.error == null) {
         await _sign();
       }
     });
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final files = await widget.datasource.files(widget.guide);
-      if (mounted) setState(() => _files = files);
-    } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  void _message(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+  void _message(String message, {bool error = false}) {
+    if (!mounted) return;
+    if (error) {
+      AppToast.error(context, message);
+    } else {
+      AppToast.success(context, message);
     }
   }
 
@@ -65,92 +70,32 @@ class _DeliveryNoteFilesScreenState extends State<DeliveryNoteFilesScreen> {
     final saved = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => GuideSignatureDialog(
-        onSave: (bytes, signer) async {
-          setState(() => _busy = true);
-          try {
-            final files = await widget.datasource.saveSignature(
-              widget.guide,
-              bytes,
-              signer: signer,
-            );
-            if (mounted) setState(() => _files = files);
-          } finally {
-            if (mounted) setState(() => _busy = false);
-          }
-        },
-      ),
+      builder: (_) => GuideSignatureDialog(onSave: _state.saveSignature),
     );
     if (saved == true) _message('Firma guardada.');
   }
 
   Future<void> _pick() async {
-    setState(() => _busy = true);
     try {
-      final selected = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg', 'webp'],
-      );
-      if (selected.isEmpty) return;
-      if (selected.length > 10) {
-        throw StateError('Seleccione hasta 10 archivos.');
-      }
-      final pending = <PendingDeliveryNoteFile>[];
-      for (final file in selected) {
-        final size = await file.length();
-        if (size == null || size == 0 || size > 10 * 1024 * 1024) {
-          throw StateError(
-            '${file.name}: el archivo debe pesar entre 1 byte y 10 MB.',
-          );
-        }
-        final extension = file.name.split('.').last.toLowerCase();
-        final mime = {
-          'pdf': 'application/pdf',
-          'png': 'image/png',
-          'jpg': 'image/jpeg',
-          'jpeg': 'image/jpeg',
-          'webp': 'image/webp',
-        }[extension];
-        if (mime == null) throw StateError('Formato de archivo no permitido.');
-        pending.add(
-          PendingDeliveryNoteFile(file.name, await file.readAsBytes(), mime),
-        );
-      }
-      if (!mounted) return;
-      setState(() => _pending = pending);
-      await _upload();
+      if (await _state.pickDocuments()) _message('Documentos guardados.');
     } catch (e) {
-      _message(e.toString());
-    } finally {
-      if (mounted) setState(() => _busy = false);
+      _message(e.toString(), error: true);
     }
   }
 
   Future<void> _upload() async {
-    setState(() => _busy = true);
     try {
-      final files = await widget.datasource.saveDocuments(
-        widget.guide,
-        _pending,
-      );
-      if (mounted) {
-        setState(() {
-          _files = files;
-          _pending = [];
-        });
-      }
+      await _state.uploadDocuments();
       _message('Documentos guardados.');
     } catch (e) {
-      _message(e.toString());
-    } finally {
-      if (mounted) setState(() => _busy = false);
+      _message(e.toString(), error: true);
     }
   }
 
   Future<void> _open(DeliveryNoteAttachment file) async {
-    setState(() => _busy = true);
+    setState(() => _opening = true);
     try {
-      final bytes = await widget.datasource.download(widget.guide, file.id);
+      final bytes = await _state.download(file.id);
       if (!mounted) return;
       if (file.mimeType.startsWith('image/')) {
         await showDialog<void>(
@@ -178,108 +123,122 @@ class _DeliveryNoteFilesScreenState extends State<DeliveryNoteFilesScreen> {
         if (saved != null) _message('Documento guardado en el dispositivo.');
       }
     } catch (e) {
-      _message(e.toString());
+      _message(e.toString(), error: true);
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) setState(() => _opening = false);
     }
   }
 
   @override
-  Widget build(BuildContext context) => PopScope(
-    canPop: !_busy,
-    child: Scaffold(
-      appBar: AppBar(title: const Text('Firma y documentos')),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _busy ? () async {} : _load,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  Text(
-                    widget.guide.number,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Firma de recepción y documentos relacionados con esta guía.',
-                  ),
-                  const SizedBox(height: 16),
-                  if (_error != null) ...[
-                    Text(_error!),
-                    TextButton(
-                      onPressed: _load,
-                      child: const Text('Reintentar'),
+  Widget build(BuildContext context) {
+    context.watch<DeliveryNoteFilesProvider>();
+    return PopScope(
+      canPop: !_busy,
+      child: Scaffold(
+        appBar: const TuvalAppBar(
+          title: 'Firma y documentos',
+          showPointSale: false,
+        ),
+        body: _state.loading
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: _busy ? () async {} : _state.load,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: [
+                    Text(
+                      widget.guide.number,
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                  ],
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 8,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: _busy || _error != null ? null : _sign,
-                        icon: const Icon(Icons.draw_outlined),
-                        label: Text(
-                          _files.signatures.isEmpty
-                              ? 'Firmar'
-                              : 'Cambiar firma',
-                        ),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed:
-                            _busy || _error != null || _pending.isNotEmpty
-                            ? null
-                            : _pick,
-                        icon: const Icon(Icons.attach_file),
-                        label: const Text('Adjuntar documentos'),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Firma de recepción y documentos relacionados con esta guía.',
+                    ),
+                    const SizedBox(height: 16),
+                    if (_state.error != null) ...[
+                      Text(_state.error!),
+                      TextButton(
+                        onPressed: _state.load,
+                        child: const Text('Reintentar'),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('PDF, JPG, PNG o WEBP · Hasta 10 MB por archivo.'),
-                  if (_busy)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: LinearProgressIndicator(),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: _busy || _state.error != null
+                              ? null
+                              : _sign,
+                          icon: const Icon(Icons.draw_outlined),
+                          label: Text(
+                            _state.files.signatures.isEmpty
+                                ? 'Firmar'
+                                : 'Cambiar firma',
+                          ),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed:
+                              _busy ||
+                                  _state.error != null ||
+                                  _state.pending.isNotEmpty
+                              ? null
+                              : _pick,
+                          icon: const Icon(Icons.attach_file),
+                          label: const Text('Adjuntar documentos'),
+                        ),
+                      ],
                     ),
-                  if (_pending.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'PDF, JPG, PNG o WEBP · Hasta 10 MB por archivo.',
+                    ),
+                    if (_busy)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: LinearProgressIndicator(),
+                      ),
+                    if (_state.pending.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        'Pendientes de guardar: ${_state.pending.map((file) => file.name).join(', ')}',
+                      ),
+                      TextButton(
+                        onPressed: _busy ? null : _upload,
+                        child: const Text('Reintentar carga'),
+                      ),
+                      TextButton(
+                        onPressed: _busy ? null : _state.clearPending,
+                        child: const Text('Quitar selección'),
+                      ),
+                    ],
+                    const SizedBox(height: 24),
                     Text(
-                      'Pendientes de guardar: ${_pending.map((file) => file.name).join(', ')}',
+                      'Firma de recepción',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    TextButton(
-                      onPressed: _busy ? null : _upload,
-                      child: const Text('Reintentar carga'),
+                    if (_state.files.signatures.isEmpty)
+                      const Text('Esta guía todavía no tiene firmas.'),
+                    ..._state.files.signatures.map(
+                      (file) => _attachment(file, true),
                     ),
-                    TextButton(
-                      onPressed: _busy
-                          ? null
-                          : () => setState(() => _pending = []),
-                      child: const Text('Quitar selección'),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Documentos (${_state.files.documents.length})',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    if (_state.files.documents.isEmpty)
+                      const Text('No hay documentos adjuntos.'),
+                    ..._state.files.documents.map(
+                      (file) => _attachment(file, false),
                     ),
                   ],
-                  const SizedBox(height: 24),
-                  Text(
-                    'Firma de recepción',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  if (_files.signatures.isEmpty)
-                    const Text('Esta guía todavía no tiene firmas.'),
-                  ..._files.signatures.map((file) => _attachment(file, true)),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Documentos (${_files.documents.length})',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  if (_files.documents.isEmpty)
-                    const Text('No hay documentos adjuntos.'),
-                  ..._files.documents.map((file) => _attachment(file, false)),
-                ],
+                ),
               ),
-            ),
-    ),
-  );
+      ),
+    );
+  }
 
   String _auditDate(DateTime timestamp) {
     final local = timestamp.toLocal();

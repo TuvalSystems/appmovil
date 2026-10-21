@@ -57,23 +57,7 @@ class CustomerSearchController extends ChangeNotifier {
     try {
       final response = await datasource.searchCustomers(cleanQuery);
       if (_disposed || generation != _generation) return;
-      final data = response['data'];
-      customerResults = data is List
-          ? data
-                .whereType<Map>()
-                .map(
-                  (item) => SteamTrapCustomer.fromJson(
-                    Map<String, dynamic>.from(item),
-                  ),
-                )
-                .where(
-                  (customer) =>
-                      customer.id > 0 &&
-                      customer.ruc.isNotEmpty &&
-                      customer.razonSocial.isNotEmpty,
-                )
-                .toList()
-          : [];
+      customerResults = response.customers;
       customerSearchMessage = customerResults.isEmpty
           ? 'No se encontraron clientes.'
           : null;

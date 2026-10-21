@@ -16,8 +16,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final AppUpdateService _appUpdateService = AppUpdateService();
-
   bool _checkingUpdate = false;
   bool _updateDialogShown = false;
   bool _pointSalesRequested = false;
@@ -38,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _checkingUpdate = true;
 
     try {
-      final result = await _appUpdateService.checkForUpdate();
+      final result = await context.read<AppUpdateService>().checkForUpdate();
 
       if (!mounted || result == null) return;
 

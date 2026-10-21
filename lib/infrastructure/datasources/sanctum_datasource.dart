@@ -10,7 +10,9 @@ import 'package:tuvalapp/infrastructure/models/menu/app_menu_model.dart';
 import 'package:tuvalapp/infrastructure/models/user_model.dart';
 
 class SanctumDatasource extends AuthDatasource {
-  final Dio _dio = DioClient.instance;
+  final Dio _dio;
+
+  SanctumDatasource({Dio? dio}) : _dio = dio ?? DioClient.instance;
 
   @override
   Future<LoginResponseModel> login(String username, String password) async {

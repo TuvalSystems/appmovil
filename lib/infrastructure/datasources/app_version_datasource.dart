@@ -6,7 +6,9 @@ import 'package:tuvalapp/config/http/endpoints/app_version_endpoints.dart';
 import 'package:tuvalapp/domain/entities/app_version_info.dart';
 
 class AppVersionDatasource {
-  final Dio _dio = DioClient.instance;
+  final Dio _dio;
+
+  AppVersionDatasource({Dio? dio}) : _dio = dio ?? DioClient.instance;
 
   Future<AppVersionInfo> getLatestVersion({String platform = 'android'}) async {
     final responseData = await ApiHandler.run(() {

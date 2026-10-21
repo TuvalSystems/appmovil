@@ -1,3 +1,11 @@
+import 'package:dio/dio.dart';
+import 'package:tuvalapp/config/http/dio_client.dart';
+import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
+import 'package:tuvalapp/infrastructure/datasources/sanctum_datasource.dart';
+import 'package:tuvalapp/infrastructure/datasources/delivery_notes_datasource.dart';
+import 'package:tuvalapp/infrastructure/datasources/steam_trap_datasource.dart';
+import 'package:tuvalapp/infrastructure/datasources/app_version_datasource.dart';
+import 'package:tuvalapp/infrastructure/services/app_update_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tuvalapp/config/environment/app_environment.dart';
@@ -18,14 +26,46 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) =>
-              AuthProvider(keyValueStorageService: keyValueStorageService),
+        Provider<KeyValueStorageService>.value(value: keyValueStorageService),
+        Provider<Dio>(
+          create: (context) =>
+              DioClient.create(storage: context.read<KeyValueStorageService>()),
+          dispose: (_, dio) => dio.close(),
+        ),
+        Provider<SanctumDatasource>(
+          create: (context) => SanctumDatasource(dio: context.read<Dio>()),
+        ),
+        Provider<PointSalesDatasource>(
+          create: (context) => PointSalesDatasource(dio: context.read<Dio>()),
+        ),
+        Provider<CustomersDatasource>(
+          create: (context) => CustomersDatasource(dio: context.read<Dio>()),
+        ),
+        Provider<DeliveryNotesDatasource>(
+          create: (context) =>
+              DeliveryNotesDatasource(dio: context.read<Dio>()),
+        ),
+        Provider<SteamTrapDatasource>(
+          create: (context) => SteamTrapDatasource(dio: context.read<Dio>()),
+        ),
+        Provider<AppVersionDatasource>(
+          create: (context) => AppVersionDatasource(dio: context.read<Dio>()),
+        ),
+        Provider<AppUpdateService>(
+          create: (context) => AppUpdateService(
+            datasource: context.read<AppVersionDatasource>(),
+          ),
         ),
         ChangeNotifierProvider(
-          create: (_) => PointSalesProvider(
-            pointSalesDatasource: PointSalesDatasource(),
-            keyValueStorageService: keyValueStorageService,
+          create: (context) => AuthProvider(
+            keyValueStorageService: context.read<KeyValueStorageService>(),
+            sanctumDatasource: context.read<SanctumDatasource>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PointSalesProvider(
+            pointSalesDatasource: context.read<PointSalesDatasource>(),
+            keyValueStorageService: context.read<KeyValueStorageService>(),
           ),
         ),
       ],

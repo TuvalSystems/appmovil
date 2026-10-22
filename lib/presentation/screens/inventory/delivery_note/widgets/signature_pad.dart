@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 class GuideSignatureController extends ChangeNotifier {
   final List<List<Offset>> _strokes = [];
+  Size canvasSize = const Size(1000, 400);
   bool get isEmpty => _strokes.isEmpty;
 
   void start(Offset point) {
@@ -58,10 +59,11 @@ class GuideSignatureController extends ChangeNotifier {
 
   Future<Uint8List> toPng() async {
     if (isEmpty) throw StateError('Dibuje su firma antes de guardar.');
+    final height = (1000 * canvasSize.height / canvasSize.width).round();
     final recorder = ui.PictureRecorder();
-    paint(Canvas(recorder), const Size(1000, 400));
+    paint(Canvas(recorder), Size(1000, height.toDouble()));
     final picture = recorder.endRecording();
-    final image = await picture.toImage(1000, 400);
+    final image = await picture.toImage(1000, height);
     try {
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       if (data == null) throw StateError('No se pudo generar la firma.');
@@ -85,56 +87,62 @@ class _GuideSignaturePadState extends State<GuideSignaturePad> {
   int? _activePointer;
 
   @override
-  Widget build(BuildContext context) => AspectRatio(
-    aspectRatio: 2.5,
-    child: DecoratedBox(
-      decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
-      child: ClipRect(
-        child: LayoutBuilder(
-          builder: (context, bounds) {
-            Offset normalize(Offset point) => Offset(
-              (point.dx / bounds.maxWidth).clamp(0.0, 1.0),
-              (point.dy / bounds.maxHeight).clamp(0.0, 1.0),
-            );
-            // Claim touches immediately so the enclosing scroll view cannot
-            // consume vertical strokes. Track one finger for each stroke.
-            return RawGestureDetector(
-              behavior: HitTestBehavior.opaque,
-              gestures: {
-                EagerGestureRecognizer:
-                    GestureRecognizerFactoryWithHandlers<
-                      EagerGestureRecognizer
-                    >(EagerGestureRecognizer.new, (_) {}),
-              },
-              child: Listener(
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => SizedBox(
+      height: (constraints.maxWidth / 1.6).clamp(220.0, 360.0),
+      child: DecoratedBox(
+        decoration: BoxDecoration(border: Border.all(color: Colors.grey)),
+        child: ClipRect(
+          child: LayoutBuilder(
+            builder: (context, bounds) {
+              widget.controller.canvasSize = Size(
+                bounds.maxWidth,
+                bounds.maxHeight,
+              );
+              Offset normalize(Offset point) => Offset(
+                (point.dx / bounds.maxWidth).clamp(0.0, 1.0),
+                (point.dy / bounds.maxHeight).clamp(0.0, 1.0),
+              );
+              // Claim touches immediately so the enclosing scroll view cannot
+              // consume vertical strokes. Track one finger for each stroke.
+              return RawGestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onPointerDown: (event) {
-                  if (_activePointer != null) return;
-                  _activePointer = event.pointer;
-                  widget.controller.start(normalize(event.localPosition));
+                gestures: {
+                  EagerGestureRecognizer:
+                      GestureRecognizerFactoryWithHandlers<
+                        EagerGestureRecognizer
+                      >(EagerGestureRecognizer.new, (_) {}),
                 },
-                onPointerMove: (event) {
-                  if (_activePointer == event.pointer) {
-                    widget.controller.update(normalize(event.localPosition));
-                  }
-                },
-                onPointerUp: (event) {
-                  if (_activePointer == event.pointer) _activePointer = null;
-                },
-                onPointerCancel: (event) {
-                  if (_activePointer == event.pointer) _activePointer = null;
-                },
-                child: CustomPaint(
-                  painter: _SignaturePainter(
-                    widget.controller,
-                    background: Theme.of(context).colorScheme.surface,
-                    foreground: Theme.of(context).colorScheme.onSurface,
+                child: Listener(
+                  behavior: HitTestBehavior.opaque,
+                  onPointerDown: (event) {
+                    if (_activePointer != null) return;
+                    _activePointer = event.pointer;
+                    widget.controller.start(normalize(event.localPosition));
+                  },
+                  onPointerMove: (event) {
+                    if (_activePointer == event.pointer) {
+                      widget.controller.update(normalize(event.localPosition));
+                    }
+                  },
+                  onPointerUp: (event) {
+                    if (_activePointer == event.pointer) _activePointer = null;
+                  },
+                  onPointerCancel: (event) {
+                    if (_activePointer == event.pointer) _activePointer = null;
+                  },
+                  child: CustomPaint(
+                    painter: _SignaturePainter(
+                      widget.controller,
+                      background: Theme.of(context).colorScheme.surface,
+                      foreground: Theme.of(context).colorScheme.onSurface,
+                    ),
+                    size: Size.infinite,
                   ),
-                  size: Size.infinite,
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     ),

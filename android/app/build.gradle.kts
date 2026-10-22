@@ -111,3 +111,15 @@ android {
 flutter {
     source = "../.."
 }
+
+// Track Flutter's generated JNI files explicitly so incremental Android builds
+// cannot package a previous Dart library after Flutter recompiles app.so.
+tasks.configureEach {
+    if (name.startsWith("merge") && name.endsWith("JniLibFolders")) {
+        val variant = name.removePrefix("merge").removeSuffix("JniLibFolders")
+            .replaceFirstChar { it.lowercaseChar() }
+        // Debug builds may not produce this directory; an empty file tree is valid.
+        inputs.files(fileTree(layout.buildDirectory.dir("intermediates/flutter/$variant/jniLibs")))
+            .withPropertyName("flutterNativeLibraries")
+    }
+}

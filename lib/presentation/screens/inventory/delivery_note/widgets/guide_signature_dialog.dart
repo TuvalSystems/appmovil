@@ -62,6 +62,8 @@ class _GuideSignatureDialogState extends State<GuideSignatureDialog> {
   Widget build(BuildContext context) => PopScope(
     canPop: !_saving,
     child: AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+      contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       title: const Text('Firmar guía'),
       content: SizedBox(
         width: 600,

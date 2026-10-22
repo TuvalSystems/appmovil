@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:tuvalapp/infrastructure/services/signature_location_service.dart';
 import 'package:tuvalapp/infrastructure/datasources/delivery_notes_datasource.dart';
 import 'package:tuvalapp/infrastructure/models/inventory/delivery_note.dart';
 import 'package:tuvalapp/infrastructure/models/inventory/delivery_note_files.dart';
@@ -7,11 +8,14 @@ import 'package:tuvalapp/infrastructure/models/inventory/delivery_note_files.dar
 class DeliveryNoteFilesProvider extends ChangeNotifier {
   final DeliveryNote guide;
   final DeliveryNotesDatasource datasource;
+  final SignatureLocationService locationService;
 
   DeliveryNoteFilesProvider({
     required this.guide,
     DeliveryNotesDatasource? datasource,
-  }) : datasource = datasource ?? DeliveryNotesDatasource();
+    SignatureLocationService? locationService,
+  }) : datasource = datasource ?? DeliveryNotesDatasource(),
+       locationService = locationService ?? SignatureLocationService();
 
   DeliveryNoteFiles files = const DeliveryNoteFiles();
   List<PendingDeliveryNoteFile> pending = [];
@@ -60,11 +64,14 @@ class DeliveryNoteFilesProvider extends ChangeNotifier {
     String signer,
     String identification,
   ) => _run(() async {
+    final location = await locationService.capture();
+    if (_disposed) throw StateError('La pantalla de la guía se cerró.');
     final result = await datasource.saveSignature(
       guide,
       bytes,
       signer: signer,
       identification: identification,
+      location: location,
     );
     if (!_disposed) files = result;
   });

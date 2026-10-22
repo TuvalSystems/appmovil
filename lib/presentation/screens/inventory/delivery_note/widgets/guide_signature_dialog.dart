@@ -73,6 +73,10 @@ class _GuideSignatureDialogState extends State<GuideSignatureDialog> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text('Dibuje su firma en el recuadro.'),
+                const SizedBox(height: 8),
+                const Text(
+                  'Al guardar se registrarán su ubicación, la precisión en metros y la fecha y hora. Active la ubicación y permita su acceso.',
+                ),
                 const SizedBox(height: 12),
                 IgnorePointer(
                   ignoring: _saving,
@@ -119,7 +123,10 @@ class _GuideSignatureDialogState extends State<GuideSignatureDialog> {
                       color: Theme.of(context).colorScheme.error,
                     ),
                   ),
-                if (_saving) const LinearProgressIndicator(),
+                if (_saving) ...[
+                  const Text('Obteniendo ubicación y guardando firma…'),
+                  const LinearProgressIndicator(),
+                ],
               ],
             ),
           ),

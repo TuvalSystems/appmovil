@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:tuvalapp/infrastructure/models/inventory/signature_location.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:tuvalapp/config/http/api_exception.dart';
 import 'package:tuvalapp/infrastructure/models/inventory/delivery_note_files.dart';
@@ -88,6 +89,7 @@ class DeliveryNotesDatasource {
     Uint8List bytes, {
     required String signer,
     required String identification,
+    required SignatureLocation location,
   }) {
     if (signer.trim().isEmpty || identification.trim().isEmpty) {
       throw ArgumentError(
@@ -104,6 +106,7 @@ class DeliveryNotesDatasource {
         ),
         'nombre_firmante': signer.trim(),
         'identificacion_firmante': identification.trim(),
+        ...location.toFormFields(),
       }),
     );
   }

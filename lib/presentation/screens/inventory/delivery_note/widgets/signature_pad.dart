@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class GuideSignatureController extends ChangeNotifier {
@@ -22,10 +23,15 @@ class GuideSignatureController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
+  void paint(
+    Canvas canvas,
+    Size size, {
+    Color background = Colors.white,
+    Color foreground = Colors.black,
+  }) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = background);
     final ink = Paint()
-      ..color = Colors.black
+      ..color = foreground
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -37,7 +43,7 @@ class GuideSignatureController extends ChangeNotifier {
         canvas.drawCircle(
           pixel(stroke.first),
           1.5,
-          Paint()..color = Colors.black,
+          Paint()..color = foreground,
         );
       } else {
         final path = Path()
@@ -67,9 +73,16 @@ class GuideSignatureController extends ChangeNotifier {
   }
 }
 
-class GuideSignaturePad extends StatelessWidget {
+class GuideSignaturePad extends StatefulWidget {
   final GuideSignatureController controller;
   const GuideSignaturePad({super.key, required this.controller});
+
+  @override
+  State<GuideSignaturePad> createState() => _GuideSignaturePadState();
+}
+
+class _GuideSignaturePadState extends State<GuideSignaturePad> {
+  int? _activePointer;
 
   @override
   Widget build(BuildContext context) => AspectRatio(
@@ -83,17 +96,42 @@ class GuideSignaturePad extends StatelessWidget {
               (point.dx / bounds.maxWidth).clamp(0.0, 1.0),
               (point.dy / bounds.maxHeight).clamp(0.0, 1.0),
             );
-            return GestureDetector(
+            // Claim touches immediately so the enclosing scroll view cannot
+            // consume vertical strokes. Track one finger for each stroke.
+            return RawGestureDetector(
               behavior: HitTestBehavior.opaque,
-              onPanStart: (event) =>
-                  controller.start(normalize(event.localPosition)),
-              onPanUpdate: (event) =>
-                  controller.update(normalize(event.localPosition)),
-              onTapDown: (event) =>
-                  controller.start(normalize(event.localPosition)),
-              child: CustomPaint(
-                painter: _SignaturePainter(controller),
-                size: Size.infinite,
+              gestures: {
+                EagerGestureRecognizer:
+                    GestureRecognizerFactoryWithHandlers<
+                      EagerGestureRecognizer
+                    >(EagerGestureRecognizer.new, (_) {}),
+              },
+              child: Listener(
+                behavior: HitTestBehavior.opaque,
+                onPointerDown: (event) {
+                  if (_activePointer != null) return;
+                  _activePointer = event.pointer;
+                  widget.controller.start(normalize(event.localPosition));
+                },
+                onPointerMove: (event) {
+                  if (_activePointer == event.pointer) {
+                    widget.controller.update(normalize(event.localPosition));
+                  }
+                },
+                onPointerUp: (event) {
+                  if (_activePointer == event.pointer) _activePointer = null;
+                },
+                onPointerCancel: (event) {
+                  if (_activePointer == event.pointer) _activePointer = null;
+                },
+                child: CustomPaint(
+                  painter: _SignaturePainter(
+                    widget.controller,
+                    background: Theme.of(context).colorScheme.surface,
+                    foreground: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  size: Size.infinite,
+                ),
               ),
             );
           },
@@ -105,10 +143,23 @@ class GuideSignaturePad extends StatelessWidget {
 
 class _SignaturePainter extends CustomPainter {
   final GuideSignatureController controller;
-  _SignaturePainter(this.controller) : super(repaint: controller);
+  final Color background;
+  final Color foreground;
+  _SignaturePainter(
+    this.controller, {
+    required this.background,
+    required this.foreground,
+  }) : super(repaint: controller);
   @override
-  void paint(Canvas canvas, Size size) => controller.paint(canvas, size);
+  void paint(Canvas canvas, Size size) => controller.paint(
+    canvas,
+    size,
+    background: background,
+    foreground: foreground,
+  );
   @override
   bool shouldRepaint(_SignaturePainter oldDelegate) =>
-      oldDelegate.controller != controller;
+      oldDelegate.controller != controller ||
+      oldDelegate.background != background ||
+      oldDelegate.foreground != foreground;
 }

@@ -24,14 +24,17 @@ import 'package:tuvalapp/presentation/screens/home/home_screen.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   final keyValueStorageService = KeyValueStorageService();
+  late AuthProvider authProvider;
   runApp(
     MultiProvider(
       providers: [
         Provider<KeyValueStorageService>.value(value: keyValueStorageService),
         Provider<BiometricAuthService>(create: (_) => BiometricAuthService()),
         Provider<Dio>(
-          create: (context) =>
-              DioClient.create(storage: context.read<KeyValueStorageService>()),
+          create: (context) => DioClient.create(
+            storage: context.read<KeyValueStorageService>(),
+            onUnauthorized: (token) => authProvider.expireSession(token),
+          ),
           dispose: (_, dio) => dio.close(),
         ),
         Provider<SanctumDatasource>(
@@ -59,16 +62,18 @@ void main() {
           ),
         ),
         ChangeNotifierProvider(
-          create: (context) => AuthProvider(
-            keyValueStorageService: context.read<KeyValueStorageService>(),
-            sanctumDatasource: context.read<SanctumDatasource>(),
-            biometricAuthService: context.read<BiometricAuthService>(),
-          ),
-        ),
-        ChangeNotifierProvider(
           create: (context) => PointSalesProvider(
             pointSalesDatasource: context.read<PointSalesDatasource>(),
             keyValueStorageService: context.read<KeyValueStorageService>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => authProvider = AuthProvider(
+            keyValueStorageService: context.read<KeyValueStorageService>(),
+            sanctumDatasource: context.read<SanctumDatasource>(),
+            biometricAuthService: context.read<BiometricAuthService>(),
+            onSessionEnded: () =>
+                context.read<PointSalesProvider>().clearPointSales(),
           ),
         ),
       ],
@@ -85,6 +90,7 @@ class MyApp extends StatelessWidget {
     final authStatus = context.watch<AuthProvider>().authStatus;
 
     return MaterialApp(
+      key: ValueKey(authStatus),
       title: 'TUVAL',
       debugShowCheckedModeBanner: false,
       theme: const AppTheme().theme(),

@@ -1,19 +1,21 @@
 # Guia de desarrollador - TUVAL App Movil
 
+Revisada contra el codigo local el 18 de noviembre de 2026. Esta guia Markdown es la referencia de mantenimiento. Los Word/PDF de `docs/` son exportaciones anteriores y no se regeneran automaticamente.
+
 ## Proposito del documento
 
 Este documento describe la estructura del proyecto Flutter `tuvalapp`, sus flujos principales y los puntos que un nuevo desarrollador debe conocer para entender, mantener y extender el sistema.
 
-La aplicacion es una app movil Flutter para TUVAL. Actualmente cubre autenticacion, seleccion de punto de venta, menu dinamico desde backend, validacion de actualizaciones y un modulo tecnico para dimensionamiento de trampas de vapor con generacion de PDF y creacion de cotizaciones borrador.
+La aplicacion es una app movil Flutter para TUVAL. Cubre autenticacion con biometria opcional, seleccion de punto de venta, menu dinamico, guias de remision con QR, firmas y adjuntos, actualizaciones y dimensionamiento de trampas de vapor con PDF y cotizaciones borrador.
 
 ## Resumen tecnico
 
 - Framework: Flutter.
 - Lenguaje: Dart.
-- Version registrada de creacion/migracion del proyecto: Flutter `3.41.7` stable, segun `.metadata`.
+- Flutter usado por CI QA: `3.44.1` stable, segun `.github/workflows/deploy-qa.yml`. `.metadata` registra revisiones del proyecto, no la version del SDK local.
 - SDK Dart requerido: `^3.11.5`, segun `pubspec.yaml`.
-- Flutter minimo requerido por dependencias: `>=3.38.4`, segun `pubspec.lock`.
-- Version actual de la app: `1.0.0+1`, segun `pubspec.yaml`.
+- SDK requerido por las dependencias bloqueadas: Dart `>=3.12.0 <4.0.0` y Flutter `>=3.44.0`, segun `pubspec.lock`.
+- Version base: `1.0.17+2018`, segun `pubspec.yaml`. CI QA sustituye nombre y numero de build; este archivo no determina la version instalada.
 - Estado global: `provider`.
 - Cliente HTTP: `dio`.
 - Persistencia local segura: `flutter_secure_storage`.
@@ -89,7 +91,7 @@ Ambientes soportados:
 
 Si no se especifica `APP_ENV`, el valor por defecto es `dev`.
 
-En produccion se desactivan los logs HTTP y no se muestra el banner de ambiente. En `dev` y `qa`, `DioClient` agrega `LogInterceptor`.
+En produccion se desactivan los logs HTTP y no se muestra el banner de ambiente. En `dev` y `qa`, solo en debug, `DioClient` registra codigo HTTP y tipo de error. No registra URLs, consultas, cabeceras, cuerpos ni excepciones completas. QA mantiene HTTP en la red cerrada de pruebas.
 
 ## Rutas
 
@@ -102,6 +104,7 @@ Rutas registradas:
 | `login` | `LoginScreen` | Login manual |
 | `home` | `HomeScreen` | Pantalla principal |
 | `/steam-traps` | `SteamTrapsScreen` | Modulo de trampas de vapor |
+| `/inventory/delivery-notes` | `DeliveryNotesScreen` | Guias, QR, firmas y adjuntos |
 
 El menu del backend no navega directo con estas rutas. Primero pasa por `MobileMenuMapper`, que traduce rutas logicas del backend a rutas Flutter.
 
@@ -113,6 +116,7 @@ Mapeo actual:
 | --- | --- |
 | `app.home` | `Navigator.defaultRouteName` |
 | `app.equipment.steam_traps.index` | `/steam-traps` |
+| `app.inventory.delivery_notes.index` | `/inventory/delivery-notes` |
 
 Para agregar una nueva opcion de menu movil, normalmente se debe:
 
@@ -127,13 +131,14 @@ Para agregar una nueva opcion de menu movil, normalmente se debe:
 
 Archivo: `lib/config/http/dio_client.dart`.
 
-`DioClient.instance` centraliza:
+`main()` inyecta un cliente compartido creado por `DioClient.create()`. `DioClient.instance` queda como respaldo para constructores sin inyeccion y no incluye por si solo el callback de expiracion de la app. El cliente centraliza:
 
 - `baseUrl` segun `AppEnvironment.apiBaseUrl`.
-- Timeouts de 15 segundos.
+- Timeouts de conexion y recepcion de 15 segundos.
 - Headers `Accept` y `Content-Type` en JSON.
 - Inyeccion automatica de token Bearer desde `flutter_secure_storage`.
-- Logs HTTP en ambientes no productivos.
+- Logs de metadatos de respuesta en debug no productivo.
+- Ante HTTP 401 de una solicitud autenticada con Bearer, llama a `AuthProvider.expireSession()`. Solo cierra la sesion si el token rechazado sigue siendo el actual. Un 401 de login publico o un 403 de una operacion no dispara esta limpieza global.
 
 Por defecto, toda solicitud requiere autenticacion. Para llamadas publicas se usa:
 
@@ -225,9 +230,13 @@ Al crear `AuthProvider`, se ejecuta `checkAuthStatus()`:
 
 1. Busca `auth_token` en almacenamiento seguro.
 2. Si no existe, marca `notAuthenticated`.
-3. Si existe, consulta `/movil/user` y `/movil/menu`.
+3. Si existe y la biometria esta activada, mantiene bloqueada la sesion hasta verificarla. En caso contrario consulta `/movil/user` y `/movil/menu`.
 4. Si las llamadas son validas, restaura usuario y menu.
-5. Si fallan, ejecuta `logout()`.
+5. Ante 401/403 durante la restauracion cierra la sesion. Otros fallos bloquean la UI con un mensaje y conservan el token. Una respuesta de una sesion invalidada no puede restaurar al usuario.
+
+### Biometria
+
+`BiometricAuthService` usa `local_auth` en Android/iOS. La opcion se activa desde el menu lateral con verificacion del sistema y se guarda como `biometric_enabled`. No almacena datos biometricos ni contrasenas. Con la opcion activa, el token permanece guardado pero la app inicia bloqueada hasta verificar la biometria. Se permite usar credenciales si no esta disponible. Un nuevo login por contrasena y el logout eliminan la preferencia anterior.
 
 ### Cambio obligatorio de clave
 
@@ -242,9 +251,11 @@ La pantalla:
 
 ### Logout
 
-`AuthProvider.logout()` elimina `auth_token`, limpia usuario/menu y vuelve a `notAuthenticated`.
+`AuthProvider.logout()` invalida inmediatamente la sesion en memoria, limpia usuario/menu y vuelve a `notAuthenticated`. El callback comun `onSessionEnded` limpia puntos de venta en cualquier via de cierre, incluida la expiracion HTTP. Tambien se ejecuta antes de activar un nuevo login por contrasena.
 
-El menu lateral tambien limpia el punto de venta mediante `PointSalesProvider.clearPointSales()`.
+Las escrituras del token y la biometria se serializan con su limpieza. No se permite otro login mientras termina el cierre. La clave de `MaterialApp` depende de `AuthStatus`; al cambiar el estado se retiran rutas y dialogos anteriores.
+
+`PointSalesProvider` se registra antes de `AuthProvider`, cuyo callback lo utiliza. El callback HTTP referencia al `AuthProvider` creado por la app; no se debe buscar un provider descendiente desde el contexto de creacion de `Dio`.
 
 ## Menu y pantalla principal
 
@@ -308,6 +319,8 @@ Seleccion inicial:
 
 El punto de venta activo se muestra en `TuvalAppBar` mediante `CurrentPointSaleBadge`.
 
+`clearPointSales()` invalida las cargas pendientes mediante una generacion y limpia el estado inmediatamente. Las escrituras de `selected_point_sale_id` se serializan con el borrado para impedir que una escritura anterior sobreviva al cierre.
+
 El modulo de trampas de vapor requiere un punto de venta seleccionado para generar PDF o cotizacion.
 
 ## Actualizaciones de app
@@ -351,7 +364,7 @@ Contrato esperado:
 
 ## Modulo: trampas de vapor
 
-Este es el modulo funcional mas completo del proyecto.
+Modulo tecnico para calculo y generacion de documentos.
 
 Archivos principales:
 
@@ -383,7 +396,7 @@ Permite seleccionar un cliente, ingresar datos tecnicos del proceso, calcular un
 
 ### Busqueda de clientes
 
-`CustomerSearchCard` usa `SteamTrapProvider.onCustomerSearchChanged()`.
+`CustomerSearchCard` usa `CustomerSearchController`, disponible en `SteamTrapProvider.customerSearch` y compartido con el listado de guias. Descarta resultados de busquedas anteriores y cancela el debounce al destruirse.
 
 Reglas:
 
@@ -576,7 +589,7 @@ Antes de generar PDF o cotizacion:
 }
 ```
 
-Campos como `knownLoadKgH` y `boilerBhp` se envian solo cuando aplican a la ruta de drenaje.
+Las claves `knownLoadKgH` y `boilerBhp` se incluyen con valor `null` cuando no aplican; sus valores se calculan para la ruta de drenaje correspondiente.
 
 ### Acciones del modulo
 
@@ -600,6 +613,38 @@ En `RecommendationCard` hay dos acciones:
 4. Envia `POST /movil/trampas-vapor/borrador`.
 5. Muestra el mensaje de respuesta.
 
+### Concurrencia de trampas de vapor
+
+El provider bloquea solicitudes de PDF o cotizacion mientras cualquiera de las dos esta en curso. Al editar el formulario, cambiar cliente o punto de venta, invalida resultados mediante una revision. Una respuesta anterior no vuelve a mostrar su PDF o mensaje sobre el formulario nuevo. Al destruir la pantalla, las respuestas pendientes no notifican al provider destruido. Este bloqueo local no sustituye la idempotencia del backend ante reintentos o nuevas instancias de pantalla.
+
+## Modulo: guias de remision
+
+Archivos principales:
+
+- `lib/presentation/screens/inventory/delivery_note/delivery_notes_screen.dart`
+- `lib/presentation/screens/inventory/delivery_note/providers/delivery_notes_provider.dart`
+- `lib/presentation/screens/inventory/delivery_note/providers/delivery_note_files_provider.dart`
+- `lib/infrastructure/datasources/delivery_notes_datasource.dart`
+- `lib/infrastructure/services/signature_location_service.dart`
+
+El listado carga tipos y bodegas en paralelo, consulta paginas de 20 guias y se sincroniza con el punto de venta activo. Despacho filtra por cliente; otros tipos permiten bodega de origen. Al cambiar filtros descarta respuestas de generaciones anteriores.
+
+El lector usa `mobile_scanner` y resuelve el codigo en el backend. Solo acepta la accion `firmar_guia`, abre los archivos y ofrece el dialogo de firma. La firma exige nombre e identificacion y se exporta a PNG. Antes de enviarla, `SignatureLocationService` solicita permisos y obtiene posicion con un limite de 30 segundos; envia latitud, longitud, precision y fecha UTC.
+
+Los adjuntos admiten PDF, PNG, JPG/JPEG y WEBP, con limite de 10 MB por archivo. El provider bloquea operaciones simultaneas y conserva archivos pendientes si falla la carga. Las imagenes descargadas se previsualizan; los otros archivos se guardan mediante `file_picker`.
+
+Endpoints relativos a `/movil/inventario/guias-remision`:
+
+| Metodo | Ruta | Uso |
+| --- | --- | --- |
+| GET | `/tipos` y `/bodegas` | Catalogos |
+| GET | ruta base | Listado paginado |
+| POST | `/resolver-qr` | Resolver QR |
+| GET | `/{tipo}/{id}/archivos` | Firmas y documentos |
+| POST | `/{tipo}/{id}/firma` | Guardar firma y ubicacion |
+| POST | `/{tipo}/{id}/documentos` | Subir adjuntos |
+| GET | `/{tipo}/{id}/archivos/{mediaId}` | Descargar archivo autenticado |
+
 ## Widgets compartidos
 
 Archivos principales:
@@ -614,9 +659,8 @@ Archivos principales:
 
 Define los colores y estilos globales:
 
-- Color marca principal: `#EA580C`.
-- Color de fondo: `#F8FAFC`.
-- Color de texto: `#0F172A`.
+- Tema claro y oscuro segun `ThemeMode.system`.
+- Colores semanticos mediante `context.appColors`; consultar `app_theme.dart` para la paleta vigente.
 - Configuracion de `AppBar`, `Drawer`, `ListTile`, inputs, botones, snackbars y progreso.
 
 ### `TuvalAppBar`
@@ -733,6 +777,11 @@ Desde `pubspec.yaml`:
 | --- | --- |
 | `flutter_secure_storage` | Guardar token y punto de venta de forma segura |
 | `dio` | Cliente HTTP |
+| `local_auth` | Desbloqueo biometrico del sistema |
+| `mobile_scanner` | Lectura de QR |
+| `geolocator` | Ubicacion al firmar |
+| `file_picker` | Seleccion y guardado de adjuntos |
+| `http_parser` | Tipos MIME para multipart |
 | `provider` | Estado global y estado por pantalla |
 | `package_info_plus` | Leer version/build instalada |
 | `url_launcher` | Abrir PDF o APK en app externa |
@@ -795,6 +844,14 @@ Si no existe keystore de release, el build release usa la firma debug.
 
 ## Comandos utiles
 
+### Publicacion automatica QA
+
+`.github/workflows/deploy-qa.yml` se ejecuta para `develop`. Obtiene la siguiente version en pruebas, instala dependencias con `--enforce-lockfile`, analiza codigo y ejecuta tests si existen. `scripts/build-qa.sh` compila release QA ARM64, calcula un build creciente basado en segundos desde 2020, genera notas y verifica paquete, version y arquitectura del APK.
+
+La firma de distribucion, registro y verificacion se delegan a `/var/www/webtuval/scripts/publicar-apk-pruebas.sh` en `srv-web02`. Este repositorio contiene la invocacion, no la implementacion del script del servidor. Una compilacion local no equivale a una publicacion.
+
+### Desarrollo local
+
 Instalar dependencias:
 
 ```bash
@@ -807,7 +864,7 @@ Analizar codigo:
 flutter analyze
 ```
 
-Ejecutar tests:
+Ejecutar tests (cuando existan archivos `*_test.dart`):
 
 ```bash
 flutter test
@@ -862,7 +919,10 @@ flowchart TD
     A["Inicio app"] --> B["AuthProvider.checkAuthStatus"]
     B --> C{"Hay token?"}
     C -- "No" --> D["LoginScreen"]
-    C -- "Si" --> E["GET /movil/user"]
+    C -- "Si" --> BIO{"Biometria activada?"}
+    BIO -- "No" --> E["GET /movil/user"]
+    BIO -- "Si" --> LOCK["Login bloqueado: verificar biometria"]
+    LOCK -- "Verificacion correcta" --> E
     E --> F["GET /movil/menu"]
     F --> G{"Debe cambiar clave?"}
     G -- "Si" --> H["ChangePasswordScreen"]
@@ -873,6 +933,7 @@ flowchart TD
     I --> L["Validar actualizacion"]
     I --> M["SideMenu dinamico"]
     M --> N["SteamTrapsScreen"]
+    M --> GUIAS["Guias: listado, QR, firma y adjuntos"]
     N --> O["Buscar cliente"]
     O --> P["Calcular carga y recomendacion"]
     P --> Q["Generar PDF"]
@@ -908,7 +969,7 @@ La forma mas consistente con el proyecto actual es:
 
 Estos puntos conviene tenerlos presentes antes de modificar el proyecto:
 
-- `test/widget_test.dart` sigue siendo el test de contador generado por Flutter y no corresponde a la app actual.
+- En el arbol revisado no hay archivos `*_test.dart` ni pruebas versionadas. CI omite `flutter test` cuando no encuentra pruebas; ese paso omitido no equivale a una suite aprobada.
 - `AuthRepositoryImp` existe, pero el flujo real usa directamente `SanctumDatasource` desde `AuthProvider`.
 - `ArticleEndpoints.sendSizing` esta definido pero no se observa uso en el flujo actual.
 - `PressureCard` muestra unidad fija `PSIG`, aunque `SteamTrapProvider` y `SteamTrapCalculator` soportan otras unidades.

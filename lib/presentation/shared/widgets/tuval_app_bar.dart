@@ -17,7 +17,7 @@ class TuvalAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final appBarActions = <Widget>[
       if (showPointSale) const Center(child: CurrentPointSaleBadge()),
-      if (actions != null) ...actions!,
+      ...?actions,
     ];
 
     return AppBar(

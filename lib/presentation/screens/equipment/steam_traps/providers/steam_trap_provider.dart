@@ -1,3 +1,4 @@
+import 'package:tuvalapp/presentation/providers/point_sales_provider.dart';
 import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tuvalapp/presentation/shared/controllers/customer_search_controller.dart';
@@ -11,15 +12,35 @@ import 'package:tuvalapp/presentation/shared/widgets/app_toast.dart';
 class SteamTrapProvider extends ChangeNotifier {
   final SteamTrapDatasource steamTrapDataSource;
   final CustomerSearchController customerSearch;
+  final PointSalesProvider? pointSalesProvider;
+  int? _pointSaleId;
+  int _revision = 0;
+  bool _disposed = false;
+  bool get isBusy => isSending || isCreateQuote;
+
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  bool _current(int revision) => !_disposed && revision == _revision;
+  void _pointSaleChanged() {
+    final id = pointSalesProvider?.selectedPvId;
+    if (_pointSaleId == id) return;
+    _pointSaleId = id;
+    clearGeneratedResult();
+  }
 
   SteamTrapProvider({
     SteamTrapDatasource? steamTrapDataSource,
     CustomersDatasource? customersDatasource,
+    this.pointSalesProvider,
   }) : steamTrapDataSource = steamTrapDataSource ?? SteamTrapDatasource(),
        customerSearch = CustomerSearchController(
          datasource: customersDatasource,
        ) {
-    customerSearch.addListener(notifyListeners);
+    customerSearch.addListener(_notify);
+    _pointSaleId = pointSalesProvider?.selectedPvId;
+    pointSalesProvider?.addListener(_pointSaleChanged);
     customerSearch.onCustomerChanged = clearGeneratedResult;
   }
 
@@ -61,9 +82,11 @@ class SteamTrapProvider extends ChangeNotifier {
   }
 
   void clearGeneratedResult() {
+    _revision++;
+    sendMessageType = null;
     sendMessage = null;
     generatedPdfUrl = null;
-    notifyListeners();
+    _notify();
   }
 
   double toDouble(String value) {
@@ -234,10 +257,12 @@ class SteamTrapProvider extends ChangeNotifier {
     required String pvCode,
     required String pvDescription,
   }) async {
+    if (_disposed || isBusy) return;
+    final revision = _revision;
     if (selectedCustomer == null) {
       sendMessage = 'Seleccione un cliente antes de generar el PDF.';
       sendMessageType = AppToastType.warning;
-      notifyListeners();
+      _notify();
       return;
     }
 
@@ -246,14 +271,15 @@ class SteamTrapProvider extends ChangeNotifier {
     if (validation != null) {
       sendMessage = validation;
       sendMessageType = AppToastType.warning;
-      notifyListeners();
+      _notify();
       return;
     }
 
+    generatedPdfUrl = null;
     isSending = true;
     sendMessage = null;
     sendMessageType = null;
-    notifyListeners();
+    _notify();
 
     try {
       final request = buildSizingRequest(
@@ -263,16 +289,18 @@ class SteamTrapProvider extends ChangeNotifier {
       );
 
       final response = await steamTrapDataSource.generateSizingPdf(request);
+      if (!_current(revision)) return;
 
       generatedPdfUrl = response.pdfUrl;
       sendMessage = response.message;
       sendMessageType = AppToastType.success;
     } catch (e) {
-      sendMessage = e.toString().replaceAll('Exception: ', '');
+      if (!_current(revision)) return;
       sendMessageType = AppToastType.error;
+      sendMessage = e.toString().replaceAll('Exception: ', '');
     } finally {
       isSending = false;
-      notifyListeners();
+      _notify();
     }
   }
 
@@ -281,10 +309,12 @@ class SteamTrapProvider extends ChangeNotifier {
     required String pvCode,
     required String pvDescription,
   }) async {
+    if (_disposed || isBusy) return;
+    final revision = _revision;
     if (selectedCustomer == null) {
       sendMessage = 'Seleccione un cliente antes de crear la cotización.';
       sendMessageType = AppToastType.warning;
-      notifyListeners();
+      _notify();
       return;
     }
 
@@ -293,14 +323,14 @@ class SteamTrapProvider extends ChangeNotifier {
     if (validation != null) {
       sendMessage = validation;
       sendMessageType = AppToastType.warning;
-      notifyListeners();
+      _notify();
       return;
     }
 
     isCreateQuote = true;
     sendMessage = null;
     sendMessageType = null;
-    notifyListeners();
+    _notify();
 
     try {
       final request = buildSizingRequest(
@@ -310,14 +340,17 @@ class SteamTrapProvider extends ChangeNotifier {
       );
 
       final response = await steamTrapDataSource.createDraftQuote(request);
+      if (!_current(revision)) return;
 
       sendMessage = response.message;
       sendMessageType = AppToastType.success;
     } catch (e) {
+      if (!_current(revision)) return;
+      sendMessageType = AppToastType.error;
       sendMessage = e.toString().replaceAll('Exception: ', '');
     } finally {
       isCreateQuote = false;
-      notifyListeners();
+      _notify();
     }
   }
 
@@ -368,7 +401,10 @@ class SteamTrapProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    customerSearch.removeListener(notifyListeners);
+    _disposed = true;
+    _revision++;
+    pointSalesProvider?.removeListener(_pointSaleChanged);
+    customerSearch.removeListener(_notify);
     customerSearch.dispose();
     pressureController.dispose();
     volumeController.dispose();

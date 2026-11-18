@@ -1,3 +1,4 @@
+import 'package:tuvalapp/presentation/providers/point_sales_provider.dart';
 import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
 import 'package:tuvalapp/infrastructure/datasources/steam_trap_datasource.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ class SteamTrapsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => SteamTrapProvider(
+        pointSalesProvider: context.read<PointSalesProvider>(),
         steamTrapDataSource: context.read<SteamTrapDatasource>(),
         customersDatasource: context.read<CustomersDatasource>(),
       ),

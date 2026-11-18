@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
 import 'package:tuvalapp/infrastructure/models/menu/app_menu_model.dart';
 import 'package:tuvalapp/presentation/providers/auth_provider.dart';
-import 'package:tuvalapp/presentation/providers/point_sales_provider.dart';
 import 'package:tuvalapp/presentation/screens/home/widgets/side_menu_header.dart';
 import 'package:tuvalapp/presentation/shared/helpers/mobile_menu_mapper.dart';
 
@@ -182,10 +181,8 @@ class _SafeLogout extends StatelessWidget {
         onTap: () async {
           final navigator = Navigator.of(context);
           final authProvider = context.read<AuthProvider>();
-          final pointProvider = context.read<PointSalesProvider>();
           navigator.pop();
           navigator.popUntil((route) => route.isFirst);
-          await pointProvider.clearPointSales();
           await authProvider.logout();
         },
       ),

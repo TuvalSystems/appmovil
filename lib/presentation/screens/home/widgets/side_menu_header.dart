@@ -121,7 +121,7 @@ class SideMenuHeader extends StatelessWidget {
                         child: ListView.separated(
                           shrinkWrap: true,
                           itemCount: pointSales.length,
-                          separatorBuilder: (_, __) => Divider(height: 1),
+                          separatorBuilder: (_, _) => Divider(height: 1),
                           itemBuilder: (context, index) {
                             final pointSale = pointSales[index];
                             final isSelected =

@@ -17,32 +17,86 @@ o josemg23. No fusiones ni despliegues.
 
 El ejemplo es para completar, no una tarea a ejecutar al leerlo.
 
-## Ejemplo práctico: limpiar el cliente seleccionado en guías
+## Ejemplo completo: limpiar el cliente en guías
 
-Este caso es ilustrativo y no afirma que el comportamiento falte actualmente. Comprueba primero si ya está resuelto; no dupliques una solución existente.
+Copia este mensaje completo en el chat del agente con appmovil abierto y develop actualizado. Es una solicitud ilustrativa; el agente debe comprobar qué existe antes de implementar.
 
 ```text
-Usa docs/prompts/modificar-funcionalidad.md.
+Usa docs/prompts/modificar-funcionalidad.md y aplica todas sus
+instrucciones, incluidas las reglas compartidas que referencia.
 
 En el listado de guías de remisión necesito poder quitar el cliente
 seleccionado desde el mismo buscador para volver a consultar las guías
 de todos los clientes que mis permisos permitan ver.
 
-Revisa primero si esa acción ya existe. Si falta, añade una acción clara
-para limpiar el cliente. Debe conservar los demás filtros activos,
-reiniciar la paginación y consultar nuevamente sin el filtro de cliente.
-No cambies firmas, lectura QR, adjuntos, permisos ni reglas de las guías.
+Primero comprueba si esta acción ya existe y funciona correctamente.
+Si ya está resuelta, informa cómo se utiliza y no dupliques la solución.
 
-Reutiliza el buscador y su controlador compartido, el provider y el
-datasource existentes. Conserva estructura, diseño y tema; revisa otros
-consumidores si necesitas modificar un recurso compartido.
-Verifica seleccionar y limpiar un cliente, la combinación con otros
-filtros, la paginación y las respuestas atrasadas.
+Si falta, agrega una acción visible y coherente con el diseño actual
+para limpiar el cliente seleccionado.
 
-Crea una rama desde origin/develop actualizado y entrega un PR a develop,
-solo para pruebas. Solicita aprobación a TuvalSystems, devtuval o
-josemg23, distinto del autor. No hagas push directo al destino,
-no uses bypass, no fusiones, no despliegues y no toques main ni producción.
+El comportamiento esperado es:
+- Selecciono un cliente y consulto sus guías.
+- Pulso la acción para quitar ese cliente.
+- El buscador queda sin cliente seleccionado.
+- Se conservan los demás filtros activos.
+- La paginación vuelve al inicio.
+- Se consulta nuevamente sin enviar el filtro de cliente.
+- Los resultados anteriores se reemplazan, sin mezclarlos con los nuevos.
+
+Si una consulta anterior termina después de limpiar el cliente,
+su respuesta no debe sobrescribir los resultados actuales.
+La acción debe respetar los permisos y el punto de venta activo.
+
+No cambies las funciones de firma, lectura QR, adjuntos ni las reglas
+de negocio de las guías.
+
+Antes de implementar, revisa el flujo completo e identifica el módulo
+responsable, la pantalla, el buscador, su controlador, el provider,
+el datasource y los parámetros del API.
+
+Revisa especialmente los recursos existentes de:
+- lib/presentation/screens/inventory/delivery_note/
+- lib/presentation/shared/widgets/customer_search_card.dart
+- lib/presentation/shared/controllers/customer_search_controller.dart
+- lib/infrastructure/datasources/delivery_notes_datasource.dart
+
+Estas rutas orientan la revisión; comprueba la implementación actual.
+Comunica la causa o el alcance del cambio y qué recursos reutilizarás.
+
+Realiza el menor cambio que resuelva completamente la necesidad.
+Respeta las responsabilidades de las capas Flutter y conserva
+estructura, diseño, tema, navegación y convenciones de appmovil.
+
+Reutiliza archivos, widgets, funciones y métodos existentes.
+No generes archivos, funciones, clases, carpetas ni capas innecesarias.
+No reconstruyas la pantalla ni reorganices otros módulos.
+Si modificas el buscador o controlador compartido, revisa sus demás
+consumidores y conserva su comportamiento.
+Justifica cualquier archivo o abstracción nuevos.
+
+Verifica:
+- Seleccionar un cliente y consultar sus guías.
+- Limpiar el cliente y volver a consultar sin ese filtro.
+- Conservar los demás filtros.
+- Reiniciar correctamente la paginación.
+- Limpiar el cliente mientras hay una consulta pendiente.
+- Resultados vacíos, errores y reintento.
+- Que los demás consumidores del buscador sigan funcionando.
+
+Ejecuta las comprobaciones de la plantilla y revisa el diff.
+No registres firmas, adjuntos ni otras operaciones de negocio para probar.
+
+Crea una rama propia desde origin/develop actualizado.
+Publica esa rama y crea un PR hacia develop, únicamente para pruebas.
+Solicita aprobación a TuvalSystems, devtuval o josemg23,
+distinto del autor del PR. Solo su aprobación cuenta como autorización.
+
+No hagas push directo a develop, no uses bypass, no fusiones,
+no actives auto-merge, no despliegues y no toques main ni producción.
+
+Entrega el enlace del PR, el comportamiento anterior y resultante,
+los recursos reutilizados, las verificaciones y los pendientes.
 ```
 
 ## Reglas compartidas obligatorias

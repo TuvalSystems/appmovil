@@ -16,32 +16,77 @@ o josemg23. No fusiones ni despliegues.
 
 El ejemplo es para completar, no una tarea a ejecutar al leerlo.
 
-## Ejemplo práctico: consultar existencias
+## Ejemplo completo: consulta de existencias
 
-Este caso es ilustrativo, no una funcionalidad pendiente. Cópialo y adapta la necesidad antes de enviarlo al agente.
+Copia este mensaje completo en el chat del agente con appmovil abierto y develop actualizado. Es una solicitud ilustrativa; el agente debe comprobar qué existe antes de implementar.
 
 ```text
-Usa docs/prompts/crear-funcionalidad.md.
+Usa docs/prompts/crear-funcionalidad.md y aplica todas sus instrucciones.
 
 Necesito consultar existencias de artículos desde la app móvil.
-Lo utilizarán los vendedores para revisar disponibilidad por bodega.
-Debe permitir buscar un artículo por código o descripción y mostrar
-las existencias que el API permita consultar para el punto de venta activo.
-La consulta será de solo lectura, sin ajustes ni movimientos de inventario.
+Lo utilizarán los vendedores para revisar la disponibilidad por bodega
+antes de ofrecer un producto al cliente.
 
-No conozco el API. Investiga si existe el endpoint y si conviene ampliar
-una pantalla actual. No inventes campos, permisos ni endpoints; informa
-si falta soporte del backend. Respeta los permisos del usuario.
+Debe permitir:
+- Buscar artículos por código o descripción.
+- Seleccionar un artículo y consultar sus existencias por bodega.
+- Consultar usando el punto de venta activo.
+- Volver a buscar otro artículo sin salir de la pantalla.
 
-Reutiliza buscadores, widgets, providers y datasources existentes.
-Conserva la estructura, diseño y tema del proyecto. Al cambiar de punto
-de venta, limpia los resultados anteriores y evita respuestas atrasadas.
-Verifica búsqueda, resultados vacíos, errores y cambio de punto de venta.
+Muestra únicamente información que realmente entregue el API.
+La consulta será de solo lectura: no debe generar reservas, ajustes
+ni movimientos de inventario. Respeta los permisos del usuario.
 
-Crea una rama desde origin/develop actualizado y entrega un PR a develop,
-solo para pruebas. Solicita aprobación a TuvalSystems, devtuval o
-josemg23, distinto del autor. No hagas push directo al destino,
-no uses bypass, no fusiones, no despliegues y no toques main ni producción.
+No conozco el endpoint. Investiga si ya existe en el proyecto o en el
+backend disponible. No inventes endpoints, campos ni permisos.
+Si falta soporte del backend, informa qué se necesita y no presentes
+datos simulados como una integración terminada.
+
+Antes de implementar, identifica el módulo y submódulo responsables.
+Por su finalidad parece corresponder a Inventario, pero confírmalo
+revisando el menú, las rutas y la organización actual.
+Comprueba si puedes ampliar una pantalla existente antes de crear otra.
+Comunica dónde lo integrarás y qué recursos reutilizarás.
+
+Respeta la estructura Flutter de appmovil:
+- Pantallas y widgets para presentación.
+- Providers para estado y acciones.
+- Datasources para llamadas al API.
+- Modelos para conversión de datos.
+- Configuración existente para endpoints, rutas, tema y autenticación.
+
+Reutiliza buscadores, widgets, funciones, métodos y servicios existentes.
+No generes archivos, funciones, clases, carpetas ni capas innecesarias.
+Crea piezas nuevas solo si tienen una responsabilidad concreta y
+justifica los archivos y abstracciones nuevos.
+No reorganices otros módulos ni introduzcas otro gestor de estado.
+
+Conserva el diseño, fuente, espaciado y tema de la aplicación.
+Incluye estados de carga, resultados vacíos, error y reintento.
+Al cambiar de punto de venta, limpia los resultados anteriores
+y evita que una respuesta atrasada muestre información del contexto previo.
+
+Verifica:
+- Búsqueda por código y descripción.
+- Selección del artículo y consulta por bodega.
+- Búsqueda sin resultados.
+- Error del API y reintento.
+- Cambio de punto de venta.
+- Salida de la pantalla mientras existe una consulta pendiente.
+
+Ejecuta las comprobaciones indicadas en la plantilla y revisa el diff.
+No realices operaciones comerciales para probar.
+
+Crea una rama propia desde origin/develop actualizado.
+Publica esa rama y crea un PR hacia develop, únicamente para pruebas.
+Solicita aprobación a TuvalSystems, devtuval o josemg23,
+distinto del autor del PR. Solo su aprobación cuenta como autorización.
+
+No hagas push directo a develop, no uses bypass, no fusiones,
+no actives auto-merge, no despliegues y no toques main ni producción.
+
+Entrega el enlace del PR, el módulo elegido, los recursos reutilizados,
+la justificación de archivos nuevos, las verificaciones y los pendientes.
 ```
 
 ## Alcance

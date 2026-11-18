@@ -539,6 +539,9 @@ Otro caso -> Revisar condicion tecnica
 
 Antes de generar PDF o cotizacion:
 
+- Los campos numericos usan `DecimalInput`: solo decimales finitos con punto o coma y signo negativo opcional. Se rechazan textos, `NaN`, infinitos, notacion cientifica y separadores mezclados. La UI rechaza la edicion completa si es invalida, sin extraer digitos de un texto pegado.
+- Presiones, volumen, temperaturas y tiempo son obligatorios cuando corresponden al proceso activo. En drenaje, carga conocida y BHP admiten vacio como alternativas, pero cualquier valor escrito debe ser numerico.
+- El provider valida tambien al construir el payload; no convierte texto invalido en cero. Si los calculos desbordan a valores no finitos, bloquea el envio.
 - Debe existir cliente seleccionado.
 - La presion de trabajo debe ser mayor a 0.
 - La presion de retorno no puede ser negativa.
@@ -969,7 +972,7 @@ La forma mas consistente con el proyecto actual es:
 
 Estos puntos conviene tenerlos presentes antes de modificar el proyecto:
 
-- En el arbol revisado no hay archivos `*_test.dart` ni pruebas versionadas. CI omite `flutter test` cuando no encuentra pruebas; ese paso omitido no equivale a una suite aprobada.
+- `test/steam_trap_numeric_test.dart` cubre validacion de los ocho campos numericos, bloqueo de PDF/cotizacion, decimales, alternativas de drenaje, desbordamiento y pegado de texto en la UI. CI ejecuta `flutter test` cuando encuentra archivos de prueba.
 - `AuthRepositoryImp` existe, pero el flujo real usa directamente `SanctumDatasource` desde `AuthProvider`.
 - `ArticleEndpoints.sendSizing` esta definido pero no se observa uso en el flujo actual.
 - `PressureCard` muestra unidad fija `PSIG`, aunque `SteamTrapProvider` y `SteamTrapCalculator` soportan otras unidades.

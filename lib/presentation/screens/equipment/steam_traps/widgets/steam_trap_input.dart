@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tuvalapp/presentation/screens/equipment/steam_traps/helpers/decimal_input.dart';
 import 'package:tuvalapp/config/theme/app_theme.dart';
 
 class SteamTrapInput extends StatelessWidget {
@@ -12,7 +13,10 @@ class SteamTrapInput extends StatelessWidget {
     required this.label,
     required this.controller,
     required this.onChanged,
-    this.keyboardType = const TextInputType.numberWithOptions(decimal: true),
+    this.keyboardType = const TextInputType.numberWithOptions(
+      decimal: true,
+      signed: true,
+    ),
   });
 
   @override
@@ -29,6 +33,7 @@ class SteamTrapInput extends StatelessWidget {
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
+            inputFormatters: isTextField ? null : [DecimalInput.formatter],
             textInputAction: TextInputAction.done,
             onChanged: (_) => onChanged(),
             onSubmitted: (_) {

@@ -1,6 +1,7 @@
 import 'package:tuvalapp/presentation/providers/point_sales_provider.dart';
 import 'package:tuvalapp/infrastructure/datasources/customers_datasource.dart';
 import 'package:flutter/widgets.dart';
+import 'package:tuvalapp/presentation/screens/equipment/steam_traps/helpers/decimal_input.dart';
 import 'package:tuvalapp/presentation/shared/controllers/customer_search_controller.dart';
 import 'package:tuvalapp/infrastructure/datasources/steam_trap_datasource.dart';
 import 'package:tuvalapp/infrastructure/models/steam_traps/steam_trap_customer.dart';
@@ -89,8 +90,9 @@ class SteamTrapProvider extends ChangeNotifier {
     _notify();
   }
 
-  double toDouble(String value) {
-    return double.tryParse(value.trim().replaceAll(',', '.')) ?? 0.0;
+  double toDouble(String value, {bool optional = false}) {
+    if (optional && value.trim().isEmpty) return 0;
+    return DecimalInput.parse(value) ?? double.nan;
   }
 
   double get pressurePsig {
@@ -152,7 +154,7 @@ class SteamTrapProvider extends ChangeNotifier {
       return 'Energía / calentamiento indirecto';
     }
 
-    if (toDouble(knownLoadController.text) > 0) {
+    if (toDouble(knownLoadController.text, optional: true) > 0) {
       return 'Carga conocida ingresada';
     }
 
@@ -160,6 +162,27 @@ class SteamTrapProvider extends ChangeNotifier {
   }
 
   String? get validationMessage {
+    final fields = <String, String>{
+      'presión de trabajo': pressureController.text,
+      'presión de retorno': returnPressureController.text,
+      if (isHeatingProcess) ...{
+        'volumen': volumeController.text,
+        'temperatura inicial': tempIniController.text,
+        'temperatura final': tempFinController.text,
+        'tiempo': tiempoController.text,
+      },
+      if (isDrainProcess) ...{
+        if (knownLoadController.text.trim().isNotEmpty)
+          'carga conocida': knownLoadController.text,
+        if (boilerBhpController.text.trim().isNotEmpty)
+          'capacidad de caldera': boilerBhpController.text,
+      },
+    };
+    for (final field in fields.entries) {
+      if (DecimalInput.parse(field.value) == null) {
+        return 'Ingrese un número válido en ${field.key}.';
+      }
+    }
     if (pressurePsig <= 0) {
       return 'Ingrese una presión de trabajo válida.';
     }
@@ -195,14 +218,24 @@ class SteamTrapProvider extends ChangeNotifier {
     }
 
     if (isDrainProcess) {
-      final knownLoad = toDouble(knownLoadController.text);
-      final bhp = toDouble(boilerBhpController.text);
+      final knownLoad = toDouble(knownLoadController.text, optional: true);
+      final bhp = toDouble(boilerBhpController.text, optional: true);
 
       if (knownLoad <= 0 && bhp <= 0) {
         return 'Ingrese la carga conocida del punto o la capacidad del caldero en BHP.';
       }
     }
 
+    if (![
+      pressurePsig,
+      returnPressurePsig,
+      pressureDifferentialPsig,
+      cargaEstimada,
+      cargaConFs,
+      if (isHeatingProcess) ...[deltaT, massKg, calorRequeridoKj, hfg],
+    ].every((value) => value.isFinite)) {
+      return 'Los valores ingresados exceden el rango de cálculo. Redúzcalos.';
+    }
     return null;
   }
 
@@ -219,12 +252,12 @@ class SteamTrapProvider extends ChangeNotifier {
       );
     }
 
-    if (toDouble(knownLoadController.text) > 0) {
-      return toDouble(knownLoadController.text);
+    if (toDouble(knownLoadController.text, optional: true) > 0) {
+      return toDouble(knownLoadController.text, optional: true);
     }
 
     return SteamTrapCalculator.condensateFromBhp(
-      bhp: toDouble(boilerBhpController.text),
+      bhp: toDouble(boilerBhpController.text, optional: true),
     );
   }
 
@@ -359,9 +392,11 @@ class SteamTrapProvider extends ChangeNotifier {
     required String pvCode,
     required String pvDescription,
   }) {
+    final validation = validationMessage;
+    if (validation != null) throw StateError(validation);
     final isHeating = isHeatingProcess;
-    final knownLoad = toDouble(knownLoadController.text);
-    final boilerBhp = toDouble(boilerBhpController.text);
+    final knownLoad = toDouble(knownLoadController.text, optional: true);
+    final boilerBhp = toDouble(boilerBhpController.text, optional: true);
 
     return SteamTrapSizingRequest(
       customerId: selectedCustomer?.id,

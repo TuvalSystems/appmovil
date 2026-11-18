@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ ${GITHUB_REPOSITORY:-} == TuvalSystems/appmovil ]]
+[[ ${GITHUB_REF:-} == refs/heads/develop ]]
+[[ ${GITHUB_SHA:-} =~ ^[0-9a-f]{40}$ ]]
+[[ ${GITHUB_RUN_ID:-} =~ ^[0-9]+$ ]]
+# Segundos desde 2020: creciente, independiente del contador del workflow y < límite Android.
+build_number=$(( $(date -u +%s) - 1577836800 ))
+[[ $build_number -gt 2017 && $build_number -lt 2100000000 ]]
+# La firma de distribución se aplica exclusivamente en srv-web02.
+flutter build apk --release --flavor qa --dart-define=APP_ENV=qa --build-number="$build_number"
+mkdir -p dist/qa
+cp build/app/outputs/flutter-apk/app-qa-release.apk dist/qa/app-qa-release.apk
+build_tools=$(find "${ANDROID_HOME:?Falta ANDROID_HOME}/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+"$build_tools/aapt" dump badging dist/qa/app-qa-release.apk > dist/qa/badging.txt
+python3 - "$build_number" <<'PY'
+import hashlib, json, os, pathlib, re, sys
+root = pathlib.Path('dist/qa')
+match = re.search(r"^package: name='([^']+)' versionCode='(\d+)' versionName='([^']+)'", (root / 'badging.txt').read_text(), re.M)
+if not match:
+    raise SystemExit('No se puede leer la APK compilada.')
+package, build, version = match.groups()
+assert package == 'com.tuvalsa.tuvalapp.qa' and version.endswith('-qa')
+assert int(build) == int(sys.argv[1]), 'El build de Android no coincide'
+metadata = {'package': package, 'buildNumber': int(build), 'versionName': version,
+            'sha256': hashlib.sha256((root / 'app-qa-release.apk').read_bytes()).hexdigest(),
+            'commit': os.environ['GITHUB_SHA'],
+            'runUrl': 'https://github.com/TuvalSystems/appmovil/actions/runs/' + os.environ['GITHUB_RUN_ID']}
+(root / 'manifest.json').write_text(json.dumps(metadata, indent=2) + '\n')
+(root / 'badging.txt').unlink()
+print(json.dumps(metadata, indent=2))
+PY

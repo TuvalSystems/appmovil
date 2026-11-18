@@ -14,7 +14,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  prepare:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: [self-hosted, Linux, X64, tuval-appmovil-pruebas]
+    timeout-minutes: 20
+    outputs:
+      qa_version: ${{ steps.version.outputs.qa_version }}
+    steps:
+      - name: Calcular siguiente versión QA en pruebas
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ $(hostname -s) == srv-web02 ]]
+          exec 9>/var/lib/tuval-runner/deploy.lock
+          flock -w 900 9
+          cd /var/www/webtuval
+          version=$(php artisan app:siguiente-version-qa --no-interaction)
+          [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo "qa_version=$version" >> "$GITHUB_OUTPUT"
+          echo "Versión a compilar: $version-qa"
+
   build:
+    needs: prepare
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -47,6 +69,7 @@ jobs:
       - name: Compilar QA y preparar manifiesto
         env:
           GH_TOKEN: ${{ github.token }}
+          QA_VERSION: ${{ needs.prepare.outputs.qa_version }}
         shell: bash
         run: bash scripts/build-qa.sh
       - name: Guardar compilación para el servidor

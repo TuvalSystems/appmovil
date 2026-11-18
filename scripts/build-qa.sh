@@ -4,11 +4,12 @@ set -euo pipefail
 [[ ${GITHUB_REF:-} == refs/heads/develop ]]
 [[ ${GITHUB_SHA:-} =~ ^[0-9a-f]{40}$ ]]
 [[ ${GITHUB_RUN_ID:-} =~ ^[0-9]+$ ]]
+[[ ${QA_VERSION:-} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
 # Segundos desde 2020: creciente, independiente del contador del workflow y < límite Android.
 build_number=$(( $(date -u +%s) - 1577836800 ))
 [[ $build_number -gt 2017 && $build_number -lt 2100000000 ]]
 # La firma de distribución se aplica exclusivamente en srv-web02.
-flutter build apk --release --flavor qa --target-platform android-arm64 --dart-define=APP_ENV=qa --build-number="$build_number"
+flutter build apk --release --flavor qa --target-platform android-arm64 --dart-define=APP_ENV=qa --build-number="$build_number" --build-name="$QA_VERSION"
 mkdir -p dist/qa
 python3 scripts/release_notes.py > dist/qa/release-notes.txt
 cp build/app/outputs/flutter-apk/app-qa-release.apk dist/qa/app-qa-release.apk
@@ -21,7 +22,8 @@ match = re.search(r"^package: name='([^']+)' versionCode='(\d+)' versionName='([
 if not match:
     raise SystemExit('No se puede leer la APK compilada.')
 package, build, version = match.groups()
-assert package == 'com.tuvalsa.tuvalapp.qa' and version.endswith('-qa')
+assert package == 'com.tuvalsa.tuvalapp.qa'
+assert version == os.environ['QA_VERSION'] + '-qa', 'La versión de Android no coincide con QA'
 assert int(build) == int(sys.argv[1]), 'El build de Android no coincide'
 with zipfile.ZipFile(root / 'app-qa-release.apk') as apk:
     architectures = {name.split('/')[1] for name in apk.namelist() if name.startswith('lib/') and name.endswith('.so')}

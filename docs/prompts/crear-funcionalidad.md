@@ -7,7 +7,8 @@ Usa docs/prompts/crear-funcionalidad.md.
 Necesito [pantalla o funcionalidad] para [personas y objetivo].
 Debe mostrar [información], permitir [acciones] y respetar [reglas].
 Pantalla relacionada o API, si lo conozco: [referencia opcional].
-Investiga dónde integrarlo y qué puedes reutilizar.
+Identifica el módulo responsable e integra allí el cambio reutilizando lo existente.
+No generes archivos, funciones ni abstracciones innecesarias.
 Respeta estructura, diseño y convenciones actuales de Flutter.
 Solo pruebas: PR hacia develop, aprobado por TuvalSystems, devtuval
 o josemg23. No fusiones ni despliegues.
@@ -75,6 +76,19 @@ Solo pruebas: rama `develop`, ambiente `qa`. No trabajar sobre `main` ni producc
 8. Respeta sesión, punto de venta, cliente y bodega. Limpia datos dependientes al cambiar contexto. Evita respuestas atrasadas, notificaciones tras `dispose` y uso de contextos desmontados después de operaciones asíncronas. Reutiliza mecanismos existentes.
 9. Incluye carga, vacío, error y reintento. Preserva validaciones, biometría y permisos nativos afectados. No registres firmas, cotizaciones u otras operaciones de negocio solo para probar sin autorización específica, incluso en QA.
 10. Usa funciones claras, nombres descriptivos y condiciones legibles. Revisa consumidores antes de cambiar recursos compartidos. No silencies errores, desactives lints ni dejes código comentado. Crea solo archivos necesarios, sin copias, informes, abstracciones hipotéticas o documentación adicional por defecto. No reviertas trabajo ajeno.
+
+## Modularización obligatoria y alcance mínimo
+
+Esta es una regla fundamental para crear y modificar funcionalidades, no una recomendación opcional.
+
+1. Antes de implementar, identifica el módulo y submódulo responsables por el proceso de negocio, menú y código existente. Comunica dónde integrarás el cambio y qué archivos, funciones y métodos reutilizarás. No decidas la ubicación solo por una palabra de la solicitud o el nombre del endpoint.
+2. Incorpora la funcionalidad en su módulo, respetando las capas actuales. Por ejemplo, guías de remisión corresponde a `inventory/delivery_note` y trampas de vapor a `equipment/steam_traps` en presentación; revisa sus recursos relacionados en infraestructura y configuración. Estos ejemplos orientan la búsqueda, no obligan a crear rutas nuevas.
+3. Mantén widgets, providers y helpers exclusivos dentro del módulo según su patrón vigente. Usa los archivos de modelos, datasources y endpoints que ya correspondan a ese flujo. No coloques lógica específica en recursos globales solo por comodidad ni dupliques servicios entre módulos.
+4. Reutiliza o amplía una función, método, clase o archivo existente cuando su responsabilidad sea adecuada. Crea uno nuevo únicamente cuando el comportamiento solicitado lo necesite y la separación tenga una responsabilidad concreta. Justifica cada archivo nuevo y cualquier nueva abstracción en la entrega.
+5. No generes funciones, métodos, clases, wrappers, parámetros, interfaces, carpetas, archivos vacíos ni capas para usos futuros hipotéticos. Evita helpers de un solo paso que no aporten claridad, funciones que solo reenvían llamadas sin una responsabilidad propia y fragmentación innecesaria. Una función nueva sí puede justificarse por claridad, reglas de negocio, reutilización real o aislamiento de un comportamiento relevante; no concentres todo en un bloque gigante para evitar crear funciones.
+6. Promueve código a compartido solo cuando exista reutilización real o una responsabilidad transversal demostrable. Revisa los consumidores y conserva compatibilidad; no diseñes un sistema genérico para resolver una única necesidad local.
+7. Modulariza progresivamente el alcance solicitado. No migres todo el proyecto, reorganices otros módulos ni crees automáticamente un árbol de carpetas por cada funcionalidad. Si falta un módulo y el proceso realmente lo requiere, explica su ubicación y crea únicamente las piezas necesarias, siguiendo las capas existentes.
+8. Antes de entregar, revisa el diff para retirar código sin uso, duplicaciones, funciones o archivos innecesarios introducidos por esta tarea. No elimines trabajo ajeno. Confirma el módulo elegido, los recursos reutilizados y la necesidad de las nuevas piezas.
 
 ## Verificación
 

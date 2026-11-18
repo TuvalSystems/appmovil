@@ -8,6 +8,8 @@ En [pantalla o funcionalidad], actualmente [comportamiento actual].
 Necesito [resultado esperado] y conservar [reglas o comportamientos].
 Pasos para reproducir o API, si los conozco: [referencia opcional].
 Revisa el flujo completo y corrige la causa con el menor cambio necesario.
+Identifica el módulo responsable y reutiliza sus archivos y funciones.
+No generes archivos, funciones ni abstracciones innecesarias.
 Respeta estructura, diseño y convenciones actuales de Flutter.
 Solo pruebas: PR hacia develop, aprobado por TuvalSystems, devtuval
 o josemg23. No fusiones ni despliegues.
@@ -45,11 +47,13 @@ no uses bypass, no fusiones, no despliegues y no toques main ni producción.
 
 ## Reglas compartidas obligatorias
 
-Lee y aplica las secciones **Alcance**, **Estructura e implementación**, **Verificación** y **PR y aprobación de colaboradores** de [crear-funcionalidad.md](crear-funcionalidad.md). Forman parte de esta plantilla; no ejecutes su ejemplo de creación. Si falta ese archivo, informa el bloqueo antes de implementar.
+Lee y aplica las secciones **Alcance**, **Estructura e implementación**, **Modularización obligatoria y alcance mínimo**, **Verificación** y **PR y aprobación de colaboradores** de [crear-funcionalidad.md](crear-funcionalidad.md). Forman parte de esta plantilla; no ejecutes su ejemplo de creación. Si falta ese archivo, informa el bloqueo antes de implementar.
 
 Estas reglas se limitan a colaboradores que invoquen el prompt. No imponen PR ni bloquean subidas del propietario en su trabajo directo fuera del flujo. No configures protecciones globales ni modifiques CODEOWNERS o workflows.
 
 El único destino es `develop` y el ambiente es `qa`, sin tocar `main` ni producción. Solo cuenta como aprobación una revisión humana de `TuvalSystems`, `devtuval` o `josemg23`, distinta del autor. El agente entrega el PR abierto; no fusiona ni despliega.
+
+La modularización es obligatoria: integra el cambio en el módulo responsable, reutiliza sus piezas y justifica cualquier archivo o abstracción nuevos. No crees funciones sin una responsabilidad necesaria ni reorganices módulos ajenos a la tarea.
 
 ## Instrucciones específicas para modificar
 

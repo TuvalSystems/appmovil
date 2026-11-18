@@ -27,39 +27,6 @@ class ContentBody extends StatelessWidget {
             children: [
               _WelcomeCard(user: currentUser),
               SizedBox(height: 16),
-
-              // Text(
-              //   'Accesos rápidos',
-              //   style: TextStyle(
-              //     color: context.appColors.text,
-              //     fontSize: 18,
-              //     fontWeight: FontWeight.bold,
-              //   ),
-              // ),
-              // SizedBox(height: 12),
-
-              // Wrap(
-              //   spacing: 12,
-              //   runSpacing: 12,
-              //   children: [
-              //     SizedBox(
-              //       width: isWide
-              //           ? (constraints.maxWidth - 12) / 2
-              //           : constraints.maxWidth,
-              //       child: _ModuleCard(
-              //         icon: Icons.precision_manufacturing_outlined,
-              //         title: 'Trampas de Vapor',
-              //         subtitle:
-              //             'Calcula carga estimada y recomienda el tipo de trampa según el proceso.',
-              //         buttonText: 'Abrir módulo',
-              //         onTap: () {
-              //           Navigator.pushNamed(context, AppRouter.steamTraps);
-              //         },
-              //       ),
-              //     ),
-
-              //   ],
-              // ),
             ],
           ),
         );

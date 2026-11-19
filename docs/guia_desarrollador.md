@@ -105,6 +105,7 @@ Rutas registradas:
 | `home` | `HomeScreen` | Pantalla principal |
 | `/steam-traps` | `SteamTrapsScreen` | Modulo de trampas de vapor |
 | `/inventory/delivery-notes` | `DeliveryNotesScreen` | Guias, QR, firmas y adjuntos |
+| `/reports/sales/branch-sales` | `BranchSalesScreen` | Reportes → Listado de ventas por sucursal |
 
 El menu del backend no navega directo con estas rutas. Primero pasa por `MobileMenuMapper`, que traduce rutas logicas del backend a rutas Flutter.
 
@@ -117,6 +118,7 @@ Mapeo actual:
 | `app.home` | `Navigator.defaultRouteName` |
 | `app.equipment.steam_traps.index` | `/steam-traps` |
 | `app.inventory.delivery_notes.index` | `/inventory/delivery-notes` |
+| `app.sales.branch_sales.index` | `/reports/sales/branch-sales` |
 
 Para agregar una nueva opcion de menu movil, normalmente se debe:
 
@@ -273,7 +275,11 @@ Archivos principales:
 
 La pantalla principal muestra una tarjeta de bienvenida con el nombre del usuario.
 
-El `SideMenu` se construye con `authProvider.appMenu.items`, que viene del backend. Soporta:
+El `SideMenu` se construye con `authProvider.appMenu.items`, que viene del backend.
+
+El reporte de ventas se organiza en **Reportes → Listado de ventas por sucursal** mediante `MobileMenuMapper.organizeReports`. Esta adaptación solo agrupa la opción si el backend ya la concedió; reutiliza Reportes si existe y conserva el identificador lógico `app.sales.branch_sales.index` y sus permisos. La presentación y provider están en `screens/reports/sales/branch_sales/`. La ruta Flutter antigua `/sales/branch-sales` se conserva como alias. Las nuevas opciones deben registrarse con su jerarquía en el backend, no añadirse como accesos locales.
+
+Soporta:
 
 - Items simples.
 - Items con hijos mediante `ExpansionTile`.
@@ -945,7 +951,9 @@ flowchart TD
 
 ## Como agregar una nueva funcionalidad
 
-La forma mas consistente con el proyecto actual es:
+Primero clasifica la funcionalidad por su finalidad: gestión con operaciones, consulta operativa o reporte analítico. Una tabla no determina el módulo. Los reportes pertenecen a `reports/<negocio>/` y al menú Reportes; las consultas operativas y la gestión permanecen en el módulo del proceso. Sigue las reglas detalladas de `docs/prompts/crear-funcionalidad.md` y, para cambios existentes, `docs/prompts/modificar-funcionalidad.md`.
+
+Revisa y reutiliza las piezas existentes antes de crear archivos. La siguiente lista describe responsabilidades, no obliga a crear un archivo por paso:
 
 1. Crear endpoints en `lib/config/http/endpoints/`.
 2. Crear datasource en `lib/infrastructure/datasources/`.
@@ -955,7 +963,7 @@ La forma mas consistente con el proyecto actual es:
 6. Crear pantalla en `lib/presentation/screens/<modulo>/`.
 7. Crear widgets especificos dentro de la carpeta del modulo.
 8. Registrar ruta en `AppRouter`.
-9. Agregar mapeo backend -> Flutter en `MobileMenuMapper`.
+9. Registrar la opción nueva, su ruta y su padre en BD con el mecanismo versionado e idempotente del backend; asignarla por defecto a Administrador sin habilitar otros perfiles. Agregar el mapeo backend -> Flutter en `MobileMenuMapper` y verificar el menú autorizado. Una reorganización conserva asignaciones existentes.
 10. Agregar tests para calculos, providers o widgets criticos.
 
 ## Convenciones actuales

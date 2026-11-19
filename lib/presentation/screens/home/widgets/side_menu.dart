@@ -16,7 +16,9 @@ class SideMenu extends StatelessWidget {
     final user = authProvider.user;
     final fullName = user?.fullName ?? 'Usuario';
     final currentRoute = ModalRoute.of(context)?.settings.name;
-    final menuItems = authProvider.appMenu?.items ?? [];
+    final menuItems = MobileMenuMapper.organizeReports(
+      authProvider.appMenu?.items ?? [],
+    );
     //nuevo drawer menu
     return Drawer(
       child: Column(

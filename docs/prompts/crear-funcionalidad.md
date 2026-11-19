@@ -19,6 +19,9 @@ Necesito [pantalla o funcionalidad] para [personas y objetivo].
 Debe mostrar [información], permitir [acciones] y respetar [reglas].
 Pantalla relacionada o API, si lo conozco: [referencia opcional].
 Identifica el módulo responsable e integra allí el cambio reutilizando lo existente.
+Clasifica si es gestión, consulta operativa o reporte; define su menú padre.
+Registra la nueva opción y ruta en BD mediante el backend y asígnala por defecto
+al perfil Administrador, conservando la jerarquía y sin habilitar otros perfiles.
 No generes archivos, funciones ni abstracciones innecesarias.
 Respeta estructura, diseño y convenciones actuales de Flutter.
 Solo pruebas: PR hacia develop, aprobado por TuvalSystems, devtuval
@@ -143,6 +146,31 @@ Solo pruebas: rama `develop`, ambiente `qa`. No trabajar sobre `main` ni producc
 ## Modularización obligatoria y alcance mínimo
 
 Esta es una regla fundamental para crear y modificar funcionalidades, no una recomendación opcional.
+
+### Clasificación funcional, navegación y permisos
+
+Antes de crear archivos, identifica la finalidad, las acciones y quién usa la pantalla. Comunica el tipo de funcionalidad, módulo/submódulo, recorrido visible del menú, ruta Flutter y contrato de menú del backend. No clasifiques por la palabra «listado», por el nombre del endpoint ni por la presencia de una tabla.
+
+| Tipo | Criterio | Ubicación y navegación |
+| --- | --- | --- |
+| Gestión o transacción | Listado con creación, edición, aprobación u otras operaciones de negocio | Módulo del proceso, con sus acciones y permisos; no Reportes |
+| Consulta operativa | Consulta que apoya una tarea concreta, como existencias al seleccionar un artículo | Módulo responsable, aunque sea de solo lectura |
+| Reporte | Comparativos, indicadores, totales o análisis por fechas, sucursales u otras dimensiones | Módulo `reports`, con submódulo de negocio cuando corresponda; menú Reportes |
+
+Ejemplo: «Listado de ventas por sucursal» compara ventas, costos y margen; es un reporte, no gestión de ventas. Su presentación y provider corresponden a `lib/presentation/screens/reports/sales/branch_sales/` y su recorrido visible es **Reportes → Listado de ventas por sucursal**. El submódulo técnico `sales` no obliga a añadir un tercer nivel en el menú. Los modelos, datasources y endpoints existentes se reutilizan según su responsabilidad; no se duplican por mover la presentación.
+
+Para cada nueva pantalla navegable:
+
+1. Investiga en el backend las tablas/modelos de menú, rutas, relaciones padre-hijo y asignaciones de perfil. No inventes tablas, IDs ni nombres de permisos. Revisa también las instrucciones aplicables de ese repositorio.
+2. Registra la opción y su ruta lógica **en la base de datos**, bajo el padre adecuado, usando una migración, seeder o mecanismo versionado existente e idempotente. Registrar solo `AppRouter` y `MobileMenuMapper` no completa la funcionalidad. Reutiliza el padre y la opción si ya existen; no dupliques registros al ejecutar nuevamente el mecanismo.
+3. Asigna por defecto la nueva opción al perfil **Administrador**, encontrado por su identidad real en el backend, sin IDs fijos. Incluye los padres necesarios según el sistema de permisos. Conserva asignaciones existentes y no habilites otros perfiles automáticamente. Para opciones existentes, no amplíes permisos como efecto de una reorganización.
+4. Mapea la ruta lógica a Flutter y comprueba que el API de menú devuelve la jerarquía autorizada. Los permisos efectivos del endpoint deben validarse en backend; ocultar una opción en Flutter no sustituye esa autorización. No inventes accesos locales como reemplazo del registro en BD.
+5. Verifica creación y segunda ejecución sin duplicados, Administrador con acceso, perfil sin asignación sin acceso y ausencia de grupos vacíos. Comprueba el recorrido real desde el menú, la selección activa y el regreso. Si la opción ya viene agrupada, no generes un segundo grupo ni repitas la pantalla.
+6. Entrega por separado código preparado, registro/asignación aplicados en QA y validación realizada. Si no hay acceso al backend o BD, prepara lo que puedas e informa exactamente qué falta; no declares completa la integración. Estas reglas no autorizan cambios de producción ni despliegues fuera del flujo de aprobación de esta plantilla.
+
+Las modificaciones sin una pantalla navegable nueva no requieren crear opciones en BD. Si la finalidad es ambigua después de revisar el proceso y código, pregunta por esa decisión de negocio antes de elegir la ubicación.
+
+### Organización del código
 
 1. Antes de implementar, identifica el módulo y submódulo responsables por el proceso de negocio, menú y código existente. Comunica dónde integrarás el cambio y qué archivos, funciones y métodos reutilizarás. No decidas la ubicación solo por una palabra de la solicitud o el nombre del endpoint.
 2. Incorpora la funcionalidad en su módulo, respetando las capas actuales. Por ejemplo, guías de remisión corresponde a `inventory/delivery_note` y trampas de vapor a `equipment/steam_traps` en presentación; revisa sus recursos relacionados en infraestructura y configuración. Estos ejemplos orientan la búsqueda, no obligan a crear rutas nuevas.

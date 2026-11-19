@@ -21,6 +21,8 @@ Necesito [resultado esperado] y conservar [reglas o comportamientos].
 Pasos para reproducir o API, si los conozco: [referencia opcional].
 Revisa el flujo completo y corrige la causa con el menor cambio necesario.
 Identifica el módulo responsable y reutiliza sus archivos y funciones.
+Comprueba si es gestión, consulta operativa o reporte y conserva o corrige
+su jerarquía de menú según su finalidad; no añadas accesos en la raíz por defecto.
 No generes archivos, funciones ni abstracciones innecesarias.
 Respeta estructura, diseño y convenciones actuales de Flutter.
 Solo pruebas: PR hacia develop, aprobado por TuvalSystems, devtuval
@@ -132,6 +134,7 @@ La modularización es obligatoria: integra el cambio en el módulo responsable, 
 ## Instrucciones específicas para modificar
 
 1. Localiza la implementación por su nombre visible, menú o descripción funcional. Sigue el flujo completo: pantalla, widgets, provider, datasource, modelo y API. No pidas al usuario carpetas técnicas.
+   Aplica la clasificación funcional de la plantilla de creación. Si reorganizas una pantalla, revisa el padre del menú, rutas, imports y selección activa; conserva permisos y contratos existentes. Si la ampliación crea una nueva pantalla navegable, registra su ruta y jerarquía en BD y asígnala por defecto a Administrador según las reglas compartidas. No vuelvas a conceder permisos a opciones existentes solo por moverlas.
 2. Para errores, reproduce o identifica la causa antes de corregir. Para ampliaciones, determina qué cambia y qué debe conservarse. Comunica brevemente causa o alcance y recursos reutilizables, sin crear un informe adicional.
 3. Realiza el menor cambio que resuelva la necesidad completa. Edita archivos existentes cuando corresponda; crea uno solo si hace falta y sigue el patrón del módulo. No reconstruyas pantallas ni reorganices capas para un ajuste puntual.
 4. Mantén contratos, permisos, navegación, filtros, paginación, tema y comportamientos ajenos a la solicitud. Revisa consumidores de widgets, providers y servicios compartidos. No migres de gestor de estado ni dupliques lógica.

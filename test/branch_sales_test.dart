@@ -61,12 +61,57 @@ void main() {
     final position = tester.getTopLeft(label);
     expect(find.text('TOTAL'), findsOneWidget);
     expect(find.text('GM (%)'), findsOneWidget);
-    expect(find.text(r'$-12.50'), findsWidgets);
+    expect(find.text(r'-$13'), findsWidgets);
     final scroll = find.byKey(const ValueKey('branch-sales-periods'));
     await tester.drag(scroll, const Offset(-450, 0));
     await tester.pumpAndSettle();
     expect(tester.getTopLeft(label), position);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('muestra moneda USD sin centavos sin redondear el GM', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BranchSalesTable(
+            rows: [
+              BranchSales.fromJson(fixture(79500.49, 2499.75)),
+              BranchSales.fromJson(fixture(1234567.5, -1200.5)),
+              BranchSales.fromJson(fixture(-0.49, 0.2)),
+              BranchSales.fromJson(fixture(null, null)),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text(r'$79,500'), findsWidgets);
+    expect(find.text(r'$1,234,568'), findsWidgets);
+    expect(find.text(r'$0'), findsWidgets);
+    expect(find.text(r'-$0'), findsNothing);
+    expect(find.text('—'), findsWidgets);
+    expect(find.text(r'$1,314,068'), findsWidgets);
+    expect(find.text(r'$1,299'), findsWidgets);
+
+    final dropdown = find.byWidgetPredicate(
+      (widget) => widget is DropdownButton<dynamic>,
+    );
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Costo').hitTestable().last);
+    await tester.pumpAndSettle();
+    expect(find.text(r'$2,500'), findsWidgets);
+    expect(find.text(r'-$1,201'), findsWidgets);
+
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('GM (%)').hitTestable().last);
+    await tester.pumpAndSettle();
+    expect(find.text('96.9%'), findsWidgets);
+    expect(find.text('100.1%'), findsWidgets);
+    expect(find.text('140.8%'), findsWidgets);
   });
 
   test('preserva signo, decimales, nulos y ceros', () {

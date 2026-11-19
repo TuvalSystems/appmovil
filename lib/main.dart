@@ -1,3 +1,4 @@
+import 'package:tuvalapp/infrastructure/datasources/branch_sales_datasource.dart';
 import 'package:tuvalapp/infrastructure/services/biometric_auth_service.dart';
 import 'package:dio/dio.dart';
 import 'package:tuvalapp/config/http/dio_client.dart';
@@ -45,6 +46,9 @@ void main() {
         ),
         Provider<CustomersDatasource>(
           create: (context) => CustomersDatasource(dio: context.read<Dio>()),
+        ),
+        Provider<BranchSalesDatasource>(
+          create: (context) => BranchSalesDatasource(dio: context.read<Dio>()),
         ),
         Provider<DeliveryNotesDatasource>(
           create: (context) =>

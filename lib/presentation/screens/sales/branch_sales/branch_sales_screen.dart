@@ -122,8 +122,9 @@ class _BranchSalesViewState extends State<_BranchSalesView> {
             BranchSalesTable(rows: state.rows),
             const SizedBox(height: 8),
             const Text(
-              '— indica un dato no disponible. Los totales y el margen '
-              'se muestran solo cuando se cuenta con los importes requeridos.',
+              '— indica un dato no disponible. Los totales se calculan '
+              'sobre sucursales con datos informados para cada período. '
+              'Si falta un importe de un par informado, no se muestra el margen.',
             ),
           ],
         ],
@@ -132,10 +133,26 @@ class _BranchSalesViewState extends State<_BranchSalesView> {
   }
 }
 
-class BranchSalesTable extends StatelessWidget {
+class BranchSalesTable extends StatefulWidget {
   const BranchSalesTable({super.key, required this.rows});
 
   final List<BranchSales> rows;
+
+  @override
+  State<BranchSalesTable> createState() => _BranchSalesTableState();
+}
+
+enum _BranchSalesMetric {
+  sales('Ventas'),
+  cost('Costo'),
+  margin('GM (%)');
+
+  const _BranchSalesMetric(this.label);
+  final String label;
+}
+
+class _BranchSalesTableState extends State<BranchSalesTable> {
+  _BranchSalesMetric _metric = _BranchSalesMetric.sales;
 
   static const _labels = [
     'Hoy',
@@ -175,7 +192,8 @@ class BranchSalesTable extends StatelessWidget {
       color: colors.onSurface,
     );
     final totals = [
-      for (final period in SalesPeriod.values) BranchSales.total(rows, period),
+      for (final period in SalesPeriod.values)
+        BranchSales.total(widget.rows, period),
     ];
 
     Color band(int i) => i < 2
@@ -234,57 +252,87 @@ class BranchSalesTable extends StatelessWidget {
       );
     }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    String formatBranch(SalesAmounts? amounts) {
+      if (amounts == null) return '—';
+      return switch (_metric) {
+        _BranchSalesMetric.sales => _money(amounts.sales),
+        _BranchSalesMetric.cost => _money(amounts.cost),
+        _BranchSalesMetric.margin => _margin(amounts),
+      };
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Column(
+        Row(
           children: [
-            cell(
-              'Sucursal',
-              _branchWidth,
-              emphasis: true,
-              background: firstHeader,
+            const Text('Ver por sucursal:'),
+            const SizedBox(width: 8),
+            DropdownButton<_BranchSalesMetric>(
+              value: _metric,
+              items: [
+                for (final metric in _BranchSalesMetric.values)
+                  DropdownMenuItem(value: metric, child: Text(metric.label)),
+              ],
+              onChanged: (metric) {
+                if (metric != null) setState(() => _metric = metric);
+              },
             ),
-            for (final branch in rows)
-              cell(
-                (branch.name?.isNotEmpty ?? false)
-                    ? branch.name!
-                    : 'Sucursal sin nombre',
-                _branchWidth,
-              ),
-            for (final label in ['TOTAL', 'Costo', 'GM (%)'])
-              cell(
-                label,
-                _branchWidth,
-                emphasis: true,
-                background: firstHeader,
-              ),
           ],
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            key: const ValueKey('branch-sales-periods'),
-            scrollDirection: Axis.horizontal,
-            child: Column(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
               children: [
-                numericRow(_labels, emphasis: true, right: false),
-                for (final branch in rows)
-                  numericRow([
-                    for (final period in SalesPeriod.values)
-                      _money(branch.periods[period]?.sales),
-                  ]),
-                numericRow([
-                  for (final value in totals) _money(value.sales),
-                ], emphasis: true),
-                numericRow([
-                  for (final value in totals) _money(value.cost),
-                ], emphasis: true),
-                numericRow([
-                  for (final value in totals) _margin(value),
-                ], emphasis: true),
+                cell(
+                  'Sucursal',
+                  _branchWidth,
+                  emphasis: true,
+                  background: firstHeader,
+                ),
+                for (final branch in widget.rows)
+                  cell(
+                    (branch.name?.isNotEmpty ?? false)
+                        ? branch.name!
+                        : 'Sucursal sin nombre',
+                    _branchWidth,
+                  ),
+                for (final label in ['TOTAL', 'Costo', 'GM (%)'])
+                  cell(
+                    label,
+                    _branchWidth,
+                    emphasis: true,
+                    background: firstHeader,
+                  ),
               ],
             ),
-          ),
+            Expanded(
+              child: SingleChildScrollView(
+                key: const ValueKey('branch-sales-periods'),
+                scrollDirection: Axis.horizontal,
+                child: Column(
+                  children: [
+                    numericRow(_labels, emphasis: true, right: false),
+                    for (final branch in widget.rows)
+                      numericRow([
+                        for (final period in SalesPeriod.values)
+                          formatBranch(branch.periods[period]),
+                      ]),
+                    numericRow([
+                      for (final value in totals) _money(value.sales),
+                    ], emphasis: true),
+                    numericRow([
+                      for (final value in totals) _money(value.cost),
+                    ], emphasis: true),
+                    numericRow([
+                      for (final value in totals) _margin(value),
+                    ], emphasis: true),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

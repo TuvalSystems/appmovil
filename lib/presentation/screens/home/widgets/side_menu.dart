@@ -53,7 +53,22 @@ class SideMenu extends StatelessWidget {
     AppMenuItem item,
     String? currentRoute,
   ) {
-    final hasChildren = item.children.isNotEmpty;
+    final auth = context.read<AuthProvider>();
+    final canSeeBranchSales =
+        auth.authStatus == AuthStatus.authenticated &&
+        auth.user?.appAccess == true &&
+        auth.user?.status == true &&
+        MobileMenuMapper.isBranchSalesAdministrator(auth.user?.appProfileName);
+    bool visible(AppMenuItem entry) =>
+        entry.route != MobileMenuMapper.branchSalesMenuRoute ||
+        canSeeBranchSales;
+
+    if (!visible(item)) return const SizedBox.shrink();
+    final children = item.children.where(visible);
+    if (item.children.isNotEmpty && children.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final hasChildren = children.isNotEmpty;
     final isActive = _isMenuItemActive(item, currentRoute);
 
     if (hasChildren) {
@@ -78,7 +93,7 @@ class SideMenu extends StatelessWidget {
         textColor: AppColors.brand,
         collapsedTextColor: AppColors.brand,
         childrenPadding: EdgeInsets.only(left: 20),
-        children: item.children.map((child) {
+        children: children.map((child) {
           final childHasChildren = child.children.isNotEmpty;
 
           if (childHasChildren) {

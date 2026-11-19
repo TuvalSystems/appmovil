@@ -1,3 +1,4 @@
+import 'package:tuvalapp/presentation/screens/sales/branch_sales/branch_sales_screen.dart';
 import 'package:tuvalapp/presentation/screens/inventory/delivery_note/delivery_notes_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:tuvalapp/presentation/screens/auth/login_screen.dart';
@@ -9,11 +10,13 @@ class AppRouter {
   static const String home = 'home';
   static const String steamTraps = '/steam-traps';
   static const String deliveryNotes = '/inventory/delivery-notes';
+  static const String branchSales = '/sales/branch-sales';
   static Map<String, WidgetBuilder> getRoutes() {
     return {
       //auth
       initialRoute: (context) => const LoginScreen(),
       deliveryNotes: (context) => const DeliveryNotesScreen(),
+      branchSales: (context) => const BranchSalesScreen(),
       //pages
       home: (context) => const HomeScreen(),
       steamTraps: (context) =>

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:tuvalapp/config/router/app_router.dart';
 
 class MobileMenuMapper {
+  static const branchSalesMenuRoute = 'app.sales.branch_sales.index';
+  static bool isBranchSalesAdministrator(String? profileName) =>
+      profileName?.trim() == 'Administrador';
+
   static IconData resolveIcon(String? icon) {
     switch (icon) {
       case 'dashboard':
@@ -19,6 +23,8 @@ class MobileMenuMapper {
 
   static String? resolveRoute(String? backendRoute) {
     switch (backendRoute) {
+      case branchSalesMenuRoute:
+        return AppRouter.branchSales;
       case 'app.home':
         return Navigator.defaultRouteName;
       case 'app.inventory.delivery_notes.index':

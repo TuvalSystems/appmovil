@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:tuvalapp/presentation/screens/sales/branch_sales/branch_sales_screen.dart';
+import 'package:tuvalapp/presentation/screens/reports/sales/branch_sales/branch_sales_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tuvalapp/infrastructure/datasources/branch_sales_datasource.dart';
 import 'package:tuvalapp/infrastructure/models/sales/branch_sales.dart';
-import 'package:tuvalapp/presentation/screens/sales/branch_sales/providers/branch_sales_provider.dart';
+import 'package:tuvalapp/presentation/screens/reports/sales/branch_sales/providers/branch_sales_provider.dart';
 
 Map<String, dynamic> fixture(num? sales, num? cost) => {
   'txNom': ' Sucursal de prueba ',

@@ -268,15 +268,18 @@ class _BranchSalesTableState extends State<BranchSalesTable> {
           children: [
             const Text('Ver por sucursal:'),
             const SizedBox(width: 8),
-            DropdownButton<_BranchSalesMetric>(
-              value: _metric,
-              items: [
-                for (final metric in _BranchSalesMetric.values)
-                  DropdownMenuItem(value: metric, child: Text(metric.label)),
-              ],
-              onChanged: (metric) {
-                if (metric != null) setState(() => _metric = metric);
-              },
+            Expanded(
+              child: DropdownButton<_BranchSalesMetric>(
+                isExpanded: true,
+                value: _metric,
+                items: [
+                  for (final metric in _BranchSalesMetric.values)
+                    DropdownMenuItem(value: metric, child: Text(metric.label)),
+                ],
+                onChanged: (metric) {
+                  if (metric != null) setState(() => _metric = metric);
+                },
+              ),
             ),
           ],
         ),

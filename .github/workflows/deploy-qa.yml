@@ -54,12 +54,21 @@ jobs:
           flutter-version: '3.44.1'
           channel: stable
           cache: true
-      - name: Configurar repositorios del plugin de Flutter
+      - name: Configurar y verificar repositorios Gradle
         shell: bash
         run: |
           gradle_user_home="${GRADLE_USER_HOME:-$HOME/.gradle}"
           mkdir -p "$gradle_user_home/init.d"
           cp scripts/gradle/flutter-plugin-repositories.init.gradle "$gradle_user_home/init.d/"
+          # Comprobar desde el runner los POM que bloquearon la compilación.
+          mirror=https://maven-central.storage-download.googleapis.com/maven2
+          for artifact in kotlin-stdlib/2.0.21 kotlin-gradle-plugins-bom/2.0.21 kotlin-gradle-plugins-bom/2.2.20; do
+            name=${artifact%/*}
+            version=${artifact##*/}
+            curl --fail --silent --show-error --location --retry 3 --connect-timeout 15 --max-time 60 \
+              --output /dev/null "$mirror/org/jetbrains/kotlin/$artifact/$name-$version.pom"
+            echo "Disponible en réplica Maven Central: $artifact"
+          done
       - name: Instalar dependencias bloqueadas
         run: flutter pub get --enforce-lockfile
       - name: Analizar código

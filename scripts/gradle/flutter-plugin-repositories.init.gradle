@@ -1,6 +1,28 @@
-// Flutter's included Gradle build has its own plugin repositories.
-// Resolve Kotlin directly from Maven Central instead of relying on the
-// Gradle Plugin Portal's Maven Central proxy.
+// CI runners have returned missing artifacts from Maven Central and from
+// the Plugin Portal's Central proxy. Use Google's documented Central mirror
+// for plugin and project dependencies, including Flutter's included build.
+def centralMirror = 'https://maven-central.storage-download.googleapis.com/maven2/'
+def useCentralMirror = { repositories ->
+    repositories.configureEach { repository ->
+        if (repository instanceof org.gradle.api.artifacts.repositories.MavenArtifactRepository &&
+            repository.url.host in ['repo.maven.apache.org', 'repo1.maven.org']) {
+            repository.setUrl(centralMirror)
+        }
+    }
+}
+
+gradle.beforeSettings { settings ->
+    useCentralMirror(settings.pluginManagement.repositories)
+    useCentralMirror(settings.dependencyResolutionManagement.repositories)
+}
+
+gradle.beforeProject { project ->
+    useCentralMirror(project.buildscript.repositories)
+    useCentralMirror(project.repositories)
+}
+
+// The Flutter SDK does not declare plugin repositories in its own settings.
+// Central must precede the Plugin Portal to resolve Kotlin's transitive POMs.
 gradle.settingsEvaluated { settings ->
     if (settings.settingsDir.name == 'gradle' &&
         settings.settingsDir.parentFile.name == 'flutter_tools') {
@@ -8,5 +30,7 @@ gradle.settingsEvaluated { settings ->
             mavenCentral()
             gradlePluginPortal()
         }
+        logger.lifecycle('Flutter plugin repositories: ' +
+            settings.pluginManagement.repositories.collect { it.url }.join(', '))
     }
 }

@@ -50,10 +50,16 @@ class BranchSales {
   static SalesAmounts total(List<BranchSales> branches, SalesPeriod period) {
     num sales = 0;
     num cost = 0;
-    var completeSales = branches.isNotEmpty;
-    var completeCost = branches.isNotEmpty;
+    var completeSales = true;
+    var completeCost = true;
+    var reported = false;
     for (final branch in branches) {
       final amounts = branch.periods[period];
+      if (amounts?.sales == null && amounts?.cost == null) continue;
+      reported = true;
+      if (amounts?.sales == null || amounts?.cost == null) {
+        completeCost = false;
+      }
       if (amounts?.sales case final value?) {
         sales += value;
       } else {
@@ -66,8 +72,8 @@ class BranchSales {
       }
     }
     return (
-      sales: completeSales && sales.isFinite ? sales : null,
-      cost: completeCost && cost.isFinite ? cost : null,
+      sales: reported && completeSales && sales.isFinite ? sales : null,
+      cost: reported && completeCost && cost.isFinite ? cost : null,
     );
   }
 

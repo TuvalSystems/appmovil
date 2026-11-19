@@ -20,11 +20,27 @@ void main() {
     final complete = BranchSales.fromJson(fixture(10, 5));
     final partial = BranchSales.fromJson(fixture(null, 1));
     final totals = BranchSales.total([complete, partial], period);
-    expect(totals, (sales: null, cost: 6));
+    expect(totals, (sales: null, cost: null));
     expect(BranchSales.grossMargin(totals), isNull);
     expect(BranchSales.grossMargin((sales: 0, cost: 1)), isNull);
     expect(BranchSales.grossMargin((sales: 10, cost: null)), isNull);
     expect(BranchSales.grossMargin((sales: 10, cost: 5)), 0.5);
+  });
+
+  test('los pares NULL/NULL no descartan importes de otras sucursales', () {
+    final period = SalesPeriod.today;
+    final informed = BranchSales.fromJson(fixture(100, 75));
+    final absent = BranchSales.fromJson(fixture(null, null));
+    final adjustment = BranchSales.fromJson(fixture(-20, -15));
+    final totals = BranchSales.total([informed, absent, adjustment], period);
+    expect(totals, (sales: 80, cost: 60));
+    expect(BranchSales.grossMargin(totals), 0.25);
+    expect(BranchSales.total([absent], period), (sales: null, cost: null));
+    final missingCost = BranchSales.fromJson(fixture(50, null));
+    expect(BranchSales.total([informed, missingCost], period), (
+      sales: 150,
+      cost: null,
+    ));
   });
 
   testWidgets('mantiene Sucursal al desplazar importes en móvil', (

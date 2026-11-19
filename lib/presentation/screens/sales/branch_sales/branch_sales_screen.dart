@@ -119,21 +119,12 @@ class _BranchSalesViewState extends State<_BranchSalesView> {
           else if (state.hasSearched && state.rows.isEmpty)
             const Text('No se encontraron sucursales para la consulta.')
           else if (state.rows.isNotEmpty) ...[
-            _BranchCard(
-              name: 'Totales del listado',
-              periods: {
-                for (final period in SalesPeriod.values)
-                  period: BranchSales.total(state.rows, period),
-              },
-              summary: true,
+            BranchSalesTable(rows: state.rows),
+            const SizedBox(height: 8),
+            const Text(
+              '— indica un dato no disponible. Los totales y el margen '
+              'se muestran solo cuando se cuenta con los importes requeridos.',
             ),
-            for (final row in state.rows)
-              _BranchCard(
-                name: (row.name?.isNotEmpty ?? false)
-                    ? row.name!
-                    : 'Sucursal sin nombre',
-                periods: row.periods,
-              ),
           ],
         ],
       ),
@@ -141,45 +132,161 @@ class _BranchSalesViewState extends State<_BranchSalesView> {
   }
 }
 
-class _BranchCard extends StatelessWidget {
-  const _BranchCard({
-    required this.name,
-    required this.periods,
-    this.summary = false,
-  });
+class BranchSalesTable extends StatelessWidget {
+  const BranchSalesTable({super.key, required this.rows});
 
-  final String name;
-  final Map<SalesPeriod, SalesAmounts> periods;
-  final bool summary;
+  final List<BranchSales> rows;
+
+  static const _labels = [
+    'Hoy',
+    'Ayer',
+    'Período',
+    'Mes anterior',
+    'Hace 2 meses',
+    'YTD',
+    'PYTD',
+  ];
+  static const _rowHeight = 40.0;
+  static const _branchWidth = 128.0;
+  static const _periodWidth = 112.0;
 
   static String _money(num? amount) =>
       amount == null ? '—' : '\$${amount.toStringAsFixed(2)}';
 
+  static String _margin(SalesAmounts amounts) {
+    final margin = BranchSales.grossMargin(amounts);
+    return margin == null ? '—' : '${(margin * 100).toStringAsFixed(1)}%';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ExpansionTile(
-        title: Text(name),
-        subtitle: Text(
-          'Ventas del período: ${_money(periods[SalesPeriod.selected]!.sales)}',
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final firstHeader = colors.surfaceContainerHighest;
+    final monthHeader = Color.alphaBlend(
+      colors.primary.withValues(alpha: 0.19),
+      colors.surface,
+    );
+    final yearHeader = Color.alphaBlend(
+      colors.tertiary.withValues(alpha: 0.19),
+      colors.surface,
+    );
+    final textStyle = theme.textTheme.labelMedium?.copyWith(
+      color: colors.onSurface,
+    );
+    final totals = [
+      for (final period in SalesPeriod.values) BranchSales.total(rows, period),
+    ];
+
+    Color band(int i) => i < 2
+        ? firstHeader
+        : i < 5
+        ? monthHeader
+        : yearHeader;
+
+    Widget cell(
+      String label,
+      double width, {
+      bool right = false,
+      bool emphasis = false,
+      Color? background,
+    }) {
+      return Container(
+        width: width,
+        height: _rowHeight,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: background ?? colors.surface,
+          border: Border(
+            right: BorderSide(color: colors.outlineVariant),
+            bottom: BorderSide(color: colors.outlineVariant),
+          ),
         ),
-        initiallyExpanded: summary,
+        alignment: right ? Alignment.centerRight : Alignment.centerLeft,
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: right ? TextAlign.right : TextAlign.left,
+          style: emphasis
+              ? textStyle?.copyWith(fontWeight: FontWeight.bold)
+              : textStyle,
+        ),
+      );
+    }
+
+    Widget numericRow(
+      List<String> cells, {
+      bool emphasis = false,
+      bool right = true,
+    }) {
+      return Row(
         children: [
-          if (summary)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text('Totales de importes disponibles en esta consulta.'),
-            ),
-          for (final period in SalesPeriod.values)
-            ListTile(
-              title: Text(period.label),
-              subtitle: Text(
-                'Ventas: ${_money(periods[period]!.sales)} · '
-                'Costo: ${_money(periods[period]!.cost)}',
-              ),
+          for (var i = 0; i < cells.length; i++)
+            cell(
+              cells[i],
+              _periodWidth,
+              right: right,
+              emphasis: emphasis,
+              background: emphasis ? band(i) : null,
             ),
         ],
-      ),
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            cell(
+              'Sucursal',
+              _branchWidth,
+              emphasis: true,
+              background: firstHeader,
+            ),
+            for (final branch in rows)
+              cell(
+                (branch.name?.isNotEmpty ?? false)
+                    ? branch.name!
+                    : 'Sucursal sin nombre',
+                _branchWidth,
+              ),
+            for (final label in ['TOTAL', 'Costo', 'GM (%)'])
+              cell(
+                label,
+                _branchWidth,
+                emphasis: true,
+                background: firstHeader,
+              ),
+          ],
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            key: const ValueKey('branch-sales-periods'),
+            scrollDirection: Axis.horizontal,
+            child: Column(
+              children: [
+                numericRow(_labels, emphasis: true, right: false),
+                for (final branch in rows)
+                  numericRow([
+                    for (final period in SalesPeriod.values)
+                      _money(branch.periods[period]?.sales),
+                  ]),
+                numericRow([
+                  for (final value in totals) _money(value.sales),
+                ], emphasis: true),
+                numericRow([
+                  for (final value in totals) _money(value.cost),
+                ], emphasis: true),
+                numericRow([
+                  for (final value in totals) _margin(value),
+                ], emphasis: true),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -48,13 +48,33 @@ class BranchSales {
   }
 
   static SalesAmounts total(List<BranchSales> branches, SalesPeriod period) {
-    num? sales;
-    num? cost;
+    num sales = 0;
+    num cost = 0;
+    var completeSales = branches.isNotEmpty;
+    var completeCost = branches.isNotEmpty;
     for (final branch in branches) {
-      final amounts = branch.periods[period]!;
-      if (amounts.sales case final value?) sales = (sales ?? 0) + value;
-      if (amounts.cost case final value?) cost = (cost ?? 0) + value;
+      final amounts = branch.periods[period];
+      if (amounts?.sales case final value?) {
+        sales += value;
+      } else {
+        completeSales = false;
+      }
+      if (amounts?.cost case final value?) {
+        cost += value;
+      } else {
+        completeCost = false;
+      }
     }
-    return (sales: sales, cost: cost);
+    return (
+      sales: completeSales && sales.isFinite ? sales : null,
+      cost: completeCost && cost.isFinite ? cost : null,
+    );
+  }
+
+  static num? grossMargin(SalesAmounts amounts) {
+    final (:sales, :cost) = amounts;
+    if (sales == null || cost == null || sales == 0) return null;
+    final ratio = (sales - cost) / sales;
+    return ratio.isFinite && (ratio * 100).isFinite ? ratio : null;
   }
 }

@@ -1,8 +1,19 @@
 # Crear una funcionalidad en TUVAL App Móvil
 
+## Lectura obligatoria antes de implementar
+
+Antes de implementar, lee los AGENTS.md aplicables, si existen, y docs/guia_desarrollador.md y docs/prompts/crear-funcionalidad.md. Sigue las instrucciones adicionales que esos documentos referencien y que apliquen al cambio. Contrasta la documentación con el código actual, reutiliza su estructura y conserva las reglas de negocio. Si falta una referencia, búscala en el proyecto y comunica la limitación sin inventar su contenido.
+
 ## Mensaje para copiar
 
 ```text
+Antes de implementar, lee los AGENTS.md aplicables, si existen, y
+docs/guia_desarrollador.md y docs/prompts/crear-funcionalidad.md. Sigue las
+instrucciones adicionales que esos documentos referencien y que apliquen al cambio.
+Contrasta la documentación con el código actual, reutiliza su estructura y conserva
+las reglas de negocio. Si falta una referencia, búscala en el proyecto y comunica la
+limitación sin inventar su contenido.
+
 Usa docs/prompts/crear-funcionalidad.md.
 Necesito [pantalla o funcionalidad] para [personas y objetivo].
 Debe mostrar [información], permitir [acciones] y respetar [reglas].
@@ -21,6 +32,13 @@ El ejemplo es para completar, no una tarea a ejecutar al leerlo.
 Copia este mensaje completo en el chat del agente con appmovil abierto y develop actualizado. Es una solicitud ilustrativa; el agente debe comprobar qué existe antes de implementar.
 
 ```text
+Antes de implementar, lee los AGENTS.md aplicables, si existen, y
+docs/guia_desarrollador.md y docs/prompts/crear-funcionalidad.md. Sigue las
+instrucciones adicionales que esos documentos referencien y que apliquen al cambio.
+Contrasta la documentación con el código actual, reutiliza su estructura y conserva
+las reglas de negocio. Si falta una referencia, búscala en el proyecto y comunica la
+limitación sin inventar su contenido.
+
 Usa docs/prompts/crear-funcionalidad.md y aplica todas sus instrucciones.
 
 Necesito consultar existencias de artículos desde la app móvil.

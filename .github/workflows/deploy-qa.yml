@@ -54,6 +54,12 @@ jobs:
           flutter-version: '3.44.1'
           channel: stable
           cache: true
+      - name: Configurar repositorios del plugin de Flutter
+        shell: bash
+        run: |
+          gradle_user_home="${GRADLE_USER_HOME:-$HOME/.gradle}"
+          mkdir -p "$gradle_user_home/init.d"
+          cp scripts/gradle/flutter-plugin-repositories.init.gradle "$gradle_user_home/init.d/"
       - name: Instalar dependencias bloqueadas
         run: flutter pub get --enforce-lockfile
       - name: Analizar código

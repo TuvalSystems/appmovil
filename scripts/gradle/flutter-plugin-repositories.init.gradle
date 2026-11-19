@@ -1,0 +1,12 @@
+// Flutter's included Gradle build has its own plugin repositories.
+// Resolve Kotlin directly from Maven Central instead of relying on the
+// Gradle Plugin Portal's Maven Central proxy.
+gradle.settingsEvaluated { settings ->
+    if (settings.settingsDir.name == 'gradle' &&
+        settings.settingsDir.parentFile.name == 'flutter_tools') {
+        settings.pluginManagement.repositories {
+            mavenCentral()
+            gradlePluginPortal()
+        }
+    }
+}

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+import 'package:tuvalapp/presentation/screens/sales/branch_sales/branch_sales_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tuvalapp/infrastructure/datasources/branch_sales_datasource.dart';
@@ -13,6 +15,44 @@ Map<String, dynamic> fixture(num? sales, num? cost) => {
 };
 
 void main() {
+  test('no presenta sumas parciales ni GM sin importes suficientes', () {
+    final period = SalesPeriod.today;
+    final complete = BranchSales.fromJson(fixture(10, 5));
+    final partial = BranchSales.fromJson(fixture(null, 1));
+    final totals = BranchSales.total([complete, partial], period);
+    expect(totals, (sales: null, cost: 6));
+    expect(BranchSales.grossMargin(totals), isNull);
+    expect(BranchSales.grossMargin((sales: 0, cost: 1)), isNull);
+    expect(BranchSales.grossMargin((sales: 10, cost: null)), isNull);
+    expect(BranchSales.grossMargin((sales: 10, cost: 5)), 0.5);
+  });
+
+  testWidgets('mantiene Sucursal al desplazar importes en móvil', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(360, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: BranchSalesTable(
+            rows: [BranchSales.fromJson(fixture(-12.50, -5))],
+          ),
+        ),
+      ),
+    );
+    final label = find.text('Sucursal');
+    final position = tester.getTopLeft(label);
+    expect(find.text('TOTAL'), findsOneWidget);
+    expect(find.text('GM (%)'), findsOneWidget);
+    expect(find.text(r'$-12.50'), findsWidgets);
+    final scroll = find.byKey(const ValueKey('branch-sales-periods'));
+    await tester.drag(scroll, const Offset(-450, 0));
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(label), position);
+    expect(tester.takeException(), isNull);
+  });
+
   test('preserva signo, decimales, nulos y ceros', () {
     final branch = BranchSales.fromJson(fixture(-12.5, null));
     expect(branch.name, 'Sucursal de prueba');

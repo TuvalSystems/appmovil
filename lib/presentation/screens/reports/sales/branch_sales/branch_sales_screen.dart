@@ -167,8 +167,14 @@ class _BranchSalesTableState extends State<BranchSalesTable> {
   static const _branchWidth = 128.0;
   static const _periodWidth = 112.0;
 
-  static String _money(num? amount) =>
-      amount == null ? '—' : '\$${amount.toStringAsFixed(2)}';
+  static final _thousands = RegExp(r'\B(?=(\d{3})+(?!\d))');
+
+  static String _money(num? amount) {
+    if (amount == null) return '—';
+    final rounded = amount.round();
+    final grouped = rounded.abs().toString().replaceAll(_thousands, ',');
+    return '${rounded < 0 ? '-' : ''}\${grouped}';
+  }
 
   static String _margin(SalesAmounts amounts) {
     final margin = BranchSales.grossMargin(amounts);
